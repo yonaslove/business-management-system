@@ -20,3 +20,4 @@ class Business(Base):
     categories = relationship("Category", back_populates="business", cascade="all, delete-orphan")
     customers = relationship("Customer", back_populates="business", cascade="all, delete-orphan")
     sales = relationship("Sale", back_populates="business", cascade="all, delete-orphan")
+    activity_logs = relationship("ActivityLog", back_populates="business", cascade="all, delete-orphan")

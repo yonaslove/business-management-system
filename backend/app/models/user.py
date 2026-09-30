@@ -11,8 +11,10 @@ class User(Base):
     name = Column(String(255), nullable=False)
     email = Column(String(255), unique=True, index=True, nullable=False)
     password_hash = Column(String(255), nullable=False)
+    role = Column(String(50), nullable=False, default="admin")  # "admin" or "employee"
     business_id = Column(Integer, ForeignKey("businesses.id"), nullable=False)
     created_at = Column(DateTime, default=lambda: datetime.now(timezone.utc))
     updated_at = Column(DateTime, default=lambda: datetime.now(timezone.utc), onupdate=lambda: datetime.now(timezone.utc))
 
     business = relationship("Business", back_populates="users")
+    activity_logs = relationship("ActivityLog", back_populates="user", cascade="all, delete-orphan")

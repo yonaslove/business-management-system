@@ -11,7 +11,9 @@ import {
   Settings, 
   Store,
   LogOut,
-  X
+  X,
+  ShieldCheck,
+  UserCheck
 } from 'lucide-react';
 import { useAuth } from '@/lib/auth';
 
@@ -29,6 +31,9 @@ export const Sidebar: React.FC<SidebarProps> = ({ isOpen, onClose }) => {
     { name: 'Products & Stock', href: '/products', icon: Package },
     { name: 'Customers', href: '/customers', icon: Users },
     { name: 'Sales & POS', href: '/sales', icon: ShoppingCart },
+    ...(user?.role === 'admin' 
+      ? [{ name: 'Admin & Staff', href: '/admin', icon: ShieldCheck }] 
+      : []),
     { name: 'Settings', href: '/settings', icon: Settings },
   ];
 
@@ -54,9 +59,9 @@ export const Sidebar: React.FC<SidebarProps> = ({ isOpen, onClose }) => {
             <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-emerald-600 text-white shadow-md shadow-emerald-500/20">
               <Store className="h-6 w-6" />
             </div>
-            <div>
-              <span className="text-base font-bold tracking-tight text-white block">
-                {user?.business_name || 'Yoni Mini Market'}
+            <div className="truncate">
+              <span className="text-base font-bold tracking-tight text-white block truncate">
+                {user?.business_name || 'Business Manager'}
               </span>
               <span className="text-xs text-emerald-400 font-medium">Retail ERP • ETB</span>
             </div>
@@ -97,8 +102,17 @@ export const Sidebar: React.FC<SidebarProps> = ({ isOpen, onClose }) => {
         <div className="border-t border-slate-800 p-4">
           <div className="flex items-center justify-between rounded-xl bg-slate-800/60 p-3">
             <div className="truncate pr-2">
-              <p className="text-sm font-medium text-white truncate">{user?.name || 'Owner'}</p>
-              <p className="text-xs text-slate-400 truncate">{user?.email || 'demo@yonimarket.et'}</p>
+              <div className="flex items-center space-x-1.5">
+                <p className="text-sm font-medium text-white truncate">{user?.name || 'Staff'}</p>
+                <span className={`px-1.5 py-0.2 rounded text-[10px] font-bold uppercase ${
+                  user?.role === 'admin' 
+                    ? 'bg-emerald-500/20 text-emerald-300 border border-emerald-500/30' 
+                    : 'bg-blue-500/20 text-blue-300 border border-blue-500/30'
+                }`}>
+                  {user?.role === 'admin' ? 'Admin' : 'Staff'}
+                </span>
+              </div>
+              <p className="text-xs text-slate-400 truncate">{user?.email}</p>
             </div>
             <button
               onClick={logout}

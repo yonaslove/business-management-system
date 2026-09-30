@@ -31,12 +31,13 @@ def register(req: RegisterRequest, db: Session = Depends(get_db)):
     db.add(business)
     db.flush()  # get business.id
 
-    # Create user
+    # Create user with role='admin'
     hashed = get_password_hash(req.password)
     user = User(
         name=req.owner_name.strip(),
         email=req.email.lower().strip(),
         password_hash=hashed,
+        role="admin",
         business_id=business.id
     )
     db.add(user)
@@ -51,6 +52,7 @@ def register(req: RegisterRequest, db: Session = Depends(get_db)):
             "id": user.id,
             "name": user.name,
             "email": user.email,
+            "role": user.role,
             "business_id": business.id,
             "business_name": business.name
         }
@@ -75,32 +77,9 @@ def login(req: LoginRequest, db: Session = Depends(get_db)):
             "id": user.id,
             "name": user.name,
             "email": user.email,
+            "role": user.role,
             "business_id": user.business_id,
             "business_name": user.business.name if user.business else "My Business"
-        }
-    }
-
-
-@router.post("/demo-login", response_model=Token)
-def demo_login(db: Session = Depends(get_db)):
-    """1-click demo login convenience endpoint for instant evaluation."""
-    user = db.query(User).filter(User.email == "demo@yonimarket.et").first()
-    if not user:
-        # Fallback to first user in database
-        user = db.query(User).first()
-    if not user:
-        raise HTTPException(status_code=404, detail="Demo account not found. Please restart server to seed data.")
-
-    token = create_access_token(subject=user.id)
-    return {
-        "access_token": token,
-        "token_type": "bearer",
-        "user": {
-            "id": user.id,
-            "name": user.name,
-            "email": user.email,
-            "business_id": user.business_id,
-            "business_name": user.business.name if user.business else "Yoni Mini Market"
         }
     }
 

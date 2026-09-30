@@ -88,10 +88,10 @@ export default function SettingsPage() {
                   <p className="text-sm text-slate-700 mt-1">Bole Medhanialem, Addis Ababa, Ethiopia</p>
                 </div>
                 <div>
-                  <span className="text-xs font-semibold text-slate-400 uppercase">Demo Status</span>
-                  <p className="text-sm text-slate-700 mt-1 flex items-center">
+                  <span className="text-xs font-semibold text-slate-400 uppercase">Access Role</span>
+                  <p className="text-sm font-bold text-slate-800 mt-1 flex items-center">
                     <CheckCircle2 className="h-4 w-4 text-emerald-500 mr-1.5" />
-                    Demo Store Active
+                    {user?.role === 'admin' ? 'Business Administrator' : 'Staff / Employee'}
                   </p>
                 </div>
               </div>
@@ -105,18 +105,18 @@ export default function SettingsPage() {
                 </div>
                 <div>
                   <h3 className="text-base font-bold text-slate-800">User Profile</h3>
-                  <p className="text-xs text-slate-500">Logged in store manager</p>
+                  <p className="text-xs text-slate-500">Currently authenticated account</p>
                 </div>
               </div>
 
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div>
                   <span className="text-xs font-semibold text-slate-400 uppercase">Full Name</span>
-                  <p className="text-sm font-bold text-slate-800 mt-1">{user?.name || 'Yonas Demisse'}</p>
+                  <p className="text-sm font-bold text-slate-800 mt-1">{user?.name}</p>
                 </div>
                 <div>
                   <span className="text-xs font-semibold text-slate-400 uppercase">Email Address</span>
-                  <p className="text-sm text-slate-700 mt-1 font-mono text-xs">{user?.email || 'demo@yonimarket.et'}</p>
+                  <p className="text-sm text-slate-700 mt-1 font-mono text-xs">{user?.email}</p>
                 </div>
               </div>
 

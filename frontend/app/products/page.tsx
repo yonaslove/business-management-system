@@ -29,6 +29,7 @@ export default function ProductsPage() {
   const [categories, setCategories] = useState<Category[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [notification, setNotification] = useState<{ message: string; type: 'success' | 'amber' } | null>(null);
 
   // Filters & Search
   const [search, setSearch] = useState('');
@@ -185,10 +186,14 @@ export default function ProductsPage() {
     if (!activeProduct) return;
     setFormSubmitting(true);
     try {
-      await apiRequest(`/products/${activeProduct.id}`, {
+      const res = await apiRequest<{ message: string; status: string }>(`/products/${activeProduct.id}`, {
         method: 'DELETE',
       });
       setIsDeleteModalOpen(false);
+      setNotification({
+        message: res.message,
+        type: res.status === 'PENDING_APPROVAL' ? 'amber' : 'success',
+      });
       loadData();
     } catch (err: any) {
       alert(err.message || 'Failed to delete product');
@@ -227,6 +232,22 @@ export default function ProductsPage() {
               Add Product
             </button>
           </div>
+
+          {notification && (
+            <div className={`mb-6 rounded-2xl border p-4 text-xs font-semibold flex items-center justify-between ${
+              notification.type === 'amber'
+                ? 'bg-amber-50 border-amber-200 text-amber-800'
+                : 'bg-emerald-50 border-emerald-200 text-emerald-800'
+            }`}>
+              <span>{notification.message}</span>
+              <button 
+                onClick={() => setNotification(null)}
+                className="underline ml-4"
+              >
+                Dismiss
+              </button>
+            </div>
+          )}
 
           {/* Search & Filter Toolbar */}
           <div className="mb-6 grid grid-cols-1 sm:grid-cols-3 gap-3 rounded-2xl border border-slate-200/80 bg-white p-4 shadow-sm">
@@ -577,12 +598,24 @@ export default function ProductsPage() {
       <Modal
         isOpen={isDeleteModalOpen}
         onClose={() => setIsDeleteModalOpen(false)}
-        title="Confirm Delete"
+        title={user?.role === 'admin' ? "Confirm Permanent Deletion" : "Submit Deletion Request"}
         maxWidth="sm"
       >
-        <p className="text-sm text-slate-600 mb-6">
-          Are you sure you want to delete <span className="font-bold text-slate-900">{activeProduct?.name}</span>? This action cannot be undone.
-        </p>
+        <div className="space-y-3 mb-6">
+          <p className="text-sm text-slate-700">
+            Target Product: <span className="font-bold text-slate-900">{activeProduct?.name}</span>
+          </p>
+          {user?.role === 'admin' ? (
+            <p className="text-xs text-slate-500">
+              As an administrator, this action will <span className="font-bold text-red-600">permanently remove</span> the product from the catalog.
+            </p>
+          ) : (
+            <div className="rounded-xl bg-amber-50 border border-amber-200 p-3 text-xs text-amber-800">
+              <span className="font-bold block mb-1">Staff Authorization Rule:</span>
+              Only administrators can permanently delete items. Submitting this will report a deletion request to the shop owner for review.
+            </div>
+          )}
+        </div>
         <div className="flex justify-end space-x-3">
           <button
             onClick={() => setIsDeleteModalOpen(false)}
@@ -593,9 +626,15 @@ export default function ProductsPage() {
           <button
             onClick={handleDeleteProduct}
             disabled={formSubmitting}
-            className="rounded-xl bg-red-600 px-4 py-2 text-xs font-bold text-white shadow hover:bg-red-500 disabled:opacity-50"
+            className={`rounded-xl px-4 py-2 text-xs font-bold text-white shadow transition disabled:opacity-50 ${
+              user?.role === 'admin' ? 'bg-red-600 hover:bg-red-500' : 'bg-amber-600 hover:bg-amber-500'
+            }`}
           >
-            {formSubmitting ? 'Deleting...' : 'Delete'}
+            {formSubmitting
+              ? 'Submitting...'
+              : user?.role === 'admin'
+              ? 'Permanently Delete'
+              : 'Submit Deletion Request'}
           </button>
         </div>
       </Modal>

@@ -6,6 +6,7 @@ from app.database.session import get_db
 from app.models.user import User
 from app.models.product import Product
 from app.models.category import Category
+from app.models.activity_log import ActivityLog
 from app.schemas.product import (
     ProductCreate,
     ProductUpdate,
@@ -158,14 +159,33 @@ def update_product(
     if not product:
         raise HTTPException(status_code=404, detail="Product not found")
 
+    # Detect price change for audit logging
+    if product_in.price is not None and product_in.price != product.price:
+        if product_in.price < 0:
+            raise HTTPException(status_code=400, detail="Price cannot be negative")
+        old_price = product.price
+        new_price = product_in.price
+        product.price = new_price
+
+        # Record activity log
+        user_role_label = "Employee" if current_user.role == "employee" else "Admin"
+        log = ActivityLog(
+            business_id=current_user.business_id,
+            user_id=current_user.id,
+            user_name=current_user.name,
+            action="PRICE_CHANGE",
+            entity_type="product",
+            entity_id=product.id,
+            entity_name=product.name,
+            details=f"{user_role_label} {current_user.name} changed price of '{product.name}' from {old_price:.2f} ETB to {new_price:.2f} ETB.",
+            status="LOGGED"
+        )
+        db.add(log)
+
     if product_in.name is not None:
         product.name = product_in.name.strip()
     if product_in.description is not None:
         product.description = product_in.description.strip() if product_in.description else None
-    if product_in.price is not None:
-        if product_in.price < 0:
-            raise HTTPException(status_code=400, detail="Price cannot be negative")
-        product.price = product_in.price
     if product_in.stock_quantity is not None:
         if product_in.stock_quantity < 0:
             raise HTTPException(status_code=400, detail="Stock quantity cannot be negative")
@@ -195,6 +215,56 @@ def delete_product(
     if not product:
         raise HTTPException(status_code=404, detail="Product not found")
 
+    # If employee, forbid permanent delete and submit deletion request to admin
+    if current_user.role != "admin":
+        existing_req = db.query(ActivityLog).filter(
+            ActivityLog.business_id == current_user.business_id,
+            ActivityLog.entity_type == "product",
+            ActivityLog.entity_id == product.id,
+            ActivityLog.action == "DELETE_REQUEST",
+            ActivityLog.status == "PENDING_APPROVAL"
+        ).first()
+
+        if existing_req:
+            return {
+                "message": "Deletion request for this product is already pending administrator approval.",
+                "status": "PENDING_APPROVAL"
+            }
+
+        log = ActivityLog(
+            business_id=current_user.business_id,
+            user_id=current_user.id,
+            user_name=current_user.name,
+            action="DELETE_REQUEST",
+            entity_type="product",
+            entity_id=product.id,
+            entity_name=product.name,
+            details=f"Employee {current_user.name} requested permanent deletion of '{product.name}' (Stock: {product.stock_quantity}, Price: {product.price:.2f} ETB). Requires administrator approval.",
+            status="PENDING_APPROVAL"
+        )
+        db.add(log)
+        db.commit()
+        return {
+            "message": f"Deletion request submitted to business admin for review. Only administrators can permanently delete products.",
+            "status": "PENDING_APPROVAL"
+        }
+
+    # Admin: permanently delete
+    prod_name = product.name
     db.delete(product)
+
+    log = ActivityLog(
+        business_id=current_user.business_id,
+        user_id=current_user.id,
+        user_name=current_user.name,
+        action="DELETE_PERMANENT",
+        entity_type="product",
+        entity_id=product_id,
+        entity_name=prod_name,
+        details=f"Admin {current_user.name} permanently deleted product '{prod_name}'.",
+        status="LOGGED"
+    )
+    db.add(log)
     db.commit()
-    return {"message": "Product deleted successfully"}
+
+    return {"message": "Product permanently deleted by administrator.", "status": "DELETED"}

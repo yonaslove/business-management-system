@@ -2,30 +2,21 @@ from contextlib import asynccontextmanager
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from app.core.config import settings
-from app.database.session import engine, Base, SessionLocal
+from app.database.session import engine, Base
 from app.models import *  # Import all models to ensure metadata registration
-from app.routers import auth, products, customers, sales, dashboard
-from app.services.seed_data import seed_demo_data
+from app.routers import auth, products, customers, sales, dashboard, admin
 
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     # Initialize Database Tables
     Base.metadata.create_all(bind=engine)
-
-    # Seed Demo Data for Yoni Mini Market
-    db = SessionLocal()
-    try:
-        seed_demo_data(db)
-    finally:
-        db.close()
-
     yield
 
 
 app = FastAPI(
     title=settings.PROJECT_NAME,
-    description="Business Management System for Small Ethiopian Retailers (Yoni Mini Market)",
+    description="Business & Retail Management System for Ethiopian Businesses with Role-Based Controls",
     version="1.0.0",
     lifespan=lifespan
 )
@@ -45,6 +36,7 @@ app.include_router(products.router, prefix=settings.API_V1_STR)
 app.include_router(customers.router, prefix=settings.API_V1_STR)
 app.include_router(sales.router, prefix=settings.API_V1_STR)
 app.include_router(dashboard.router, prefix=settings.API_V1_STR)
+app.include_router(admin.router, prefix=settings.API_V1_STR)
 
 
 @app.get("/health", tags=["Health"])
@@ -60,7 +52,6 @@ def health_check():
 def root():
     return {
         "message": "Welcome to Business Management System API",
-        "business": "Yoni Mini Market",
         "docs_url": "/docs",
         "health_url": "/health"
     }

@@ -1,7 +1,7 @@
 'use client';
 
 import React from 'react';
-import { Menu, Bell, ShieldCheck } from 'lucide-react';
+import { Menu, ShieldCheck, UserCheck } from 'lucide-react';
 import { useAuth } from '@/lib/auth';
 
 interface HeaderProps {
@@ -11,6 +11,7 @@ interface HeaderProps {
 
 export const Header: React.FC<HeaderProps> = ({ onMenuClick, title }) => {
   const { user } = useAuth();
+  const isAdmin = user?.role === 'admin';
 
   return (
     <header className="sticky top-0 z-30 flex h-16 w-full items-center justify-between border-b border-slate-200 bg-white/80 px-6 backdrop-blur-md">
@@ -33,15 +34,25 @@ export const Header: React.FC<HeaderProps> = ({ onMenuClick, title }) => {
           Currency: ETB (Birr)
         </div>
 
-        {/* Demo status */}
-        <div className="flex items-center space-x-1.5 rounded-lg bg-slate-100 px-3 py-1 text-xs font-medium text-slate-600">
-          <ShieldCheck className="h-4 w-4 text-emerald-600" />
-          <span className="hidden md:inline">{user?.business_name || 'Yoni Mini Market'}</span>
+        {/* Business and Role status */}
+        <div className="flex items-center space-x-2 rounded-lg bg-slate-100 px-3 py-1.5 text-xs font-medium text-slate-700">
+          {isAdmin ? (
+            <ShieldCheck className="h-4 w-4 text-emerald-600" />
+          ) : (
+            <UserCheck className="h-4 w-4 text-blue-600" />
+          )}
+          <span className="font-semibold text-slate-900">{user?.business_name || 'My Store'}</span>
+          <span className="text-slate-400">•</span>
+          <span className={`font-bold ${isAdmin ? 'text-emerald-700' : 'text-blue-700'}`}>
+            {isAdmin ? 'Admin Role' : 'Staff Role'}
+          </span>
         </div>
 
         {/* Avatar */}
-        <div className="flex h-9 w-9 items-center justify-center rounded-full bg-emerald-700 text-sm font-bold text-white shadow-sm">
-          {user?.name ? user.name.charAt(0).toUpperCase() : 'Y'}
+        <div className={`flex h-9 w-9 items-center justify-center rounded-full text-sm font-bold text-white shadow-sm ${
+          isAdmin ? 'bg-emerald-700' : 'bg-blue-700'
+        }`}>
+          {user?.name ? user.name.charAt(0).toUpperCase() : 'U'}
         </div>
       </div>
     </header>

@@ -17,6 +17,7 @@ class UserOut(BaseModel):
     id: int
     name: str
     email: EmailStr
+    role: str = "admin"
     business_id: int
     business: Optional[BusinessOut] = None
     created_at: datetime

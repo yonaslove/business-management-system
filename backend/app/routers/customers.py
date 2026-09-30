@@ -6,6 +6,7 @@ from app.database.session import get_db
 from app.models.user import User
 from app.models.customer import Customer
 from app.models.sale import Sale
+from app.models.activity_log import ActivityLog
 from app.schemas.customer import CustomerCreate, CustomerUpdate, CustomerOut
 from app.routers.deps import get_current_user
 
@@ -127,6 +128,56 @@ def delete_customer(
     if not customer:
         raise HTTPException(status_code=404, detail="Customer not found")
 
+    # If employee, report deletion request to admin
+    if current_user.role != "admin":
+        existing_req = db.query(ActivityLog).filter(
+            ActivityLog.business_id == current_user.business_id,
+            ActivityLog.entity_type == "customer",
+            ActivityLog.entity_id == customer.id,
+            ActivityLog.action == "DELETE_REQUEST",
+            ActivityLog.status == "PENDING_APPROVAL"
+        ).first()
+
+        if existing_req:
+            return {
+                "message": "Deletion request for this customer is already pending administrator approval.",
+                "status": "PENDING_APPROVAL"
+            }
+
+        log = ActivityLog(
+            business_id=current_user.business_id,
+            user_id=current_user.id,
+            user_name=current_user.name,
+            action="DELETE_REQUEST",
+            entity_type="customer",
+            entity_id=customer.id,
+            entity_name=customer.name,
+            details=f"Employee {current_user.name} requested permanent deletion of customer '{customer.name}'. Requires administrator approval.",
+            status="PENDING_APPROVAL"
+        )
+        db.add(log)
+        db.commit()
+        return {
+            "message": "Deletion request submitted to business admin for review. Only administrators can permanently delete customers.",
+            "status": "PENDING_APPROVAL"
+        }
+
+    # Admin: permanently delete
+    cust_name = customer.name
     db.delete(customer)
+
+    log = ActivityLog(
+        business_id=current_user.business_id,
+        user_id=current_user.id,
+        user_name=current_user.name,
+        action="DELETE_PERMANENT",
+        entity_type="customer",
+        entity_id=customer_id,
+        entity_name=cust_name,
+        details=f"Admin {current_user.name} permanently deleted customer '{cust_name}'.",
+        status="LOGGED"
+    )
+    db.add(log)
     db.commit()
-    return {"message": "Customer deleted successfully"}
+
+    return {"message": "Customer permanently deleted by administrator.", "status": "DELETED"}

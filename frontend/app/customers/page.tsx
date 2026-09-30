@@ -29,6 +29,7 @@ export default function CustomersPage() {
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState('');
   const [error, setError] = useState<string | null>(null);
+  const [notification, setNotification] = useState<{ message: string; type: 'success' | 'amber' } | null>(null);
 
   // Modals
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
@@ -140,10 +141,14 @@ export default function CustomersPage() {
     if (!activeCustomer) return;
     setFormSubmitting(true);
     try {
-      await apiRequest(`/customers/${activeCustomer.id}`, {
+      const res = await apiRequest<{ message: string; status: string }>(`/customers/${activeCustomer.id}`, {
         method: 'DELETE',
       });
       setIsDeleteModalOpen(false);
+      setNotification({
+        message: res.message,
+        type: res.status === 'PENDING_APPROVAL' ? 'amber' : 'success',
+      });
       loadCustomers();
     } catch (err: any) {
       alert(err.message || 'Failed to delete customer');
@@ -181,6 +186,22 @@ export default function CustomersPage() {
               Add Customer
             </button>
           </div>
+
+          {notification && (
+            <div className={`mb-6 rounded-2xl border p-4 text-xs font-semibold flex items-center justify-between ${
+              notification.type === 'amber'
+                ? 'bg-amber-50 border-amber-200 text-amber-800'
+                : 'bg-emerald-50 border-emerald-200 text-emerald-800'
+            }`}>
+              <span>{notification.message}</span>
+              <button 
+                onClick={() => setNotification(null)}
+                className="underline ml-4"
+              >
+                Dismiss
+              </button>
+            </div>
+          )}
 
           {/* Search bar */}
           <div className="mb-6 rounded-2xl border border-slate-200/80 bg-white p-4 shadow-sm">
@@ -444,12 +465,24 @@ export default function CustomersPage() {
       <Modal
         isOpen={isDeleteModalOpen}
         onClose={() => setIsDeleteModalOpen(false)}
-        title="Confirm Delete"
+        title={user?.role === 'admin' ? "Confirm Permanent Deletion" : "Submit Deletion Request"}
         maxWidth="sm"
       >
-        <p className="text-sm text-slate-600 mb-6">
-          Are you sure you want to delete customer <span className="font-bold text-slate-900">{activeCustomer?.name}</span>?
-        </p>
+        <div className="space-y-3 mb-6">
+          <p className="text-sm text-slate-700">
+            Target Customer: <span className="font-bold text-slate-900">{activeCustomer?.name}</span>
+          </p>
+          {user?.role === 'admin' ? (
+            <p className="text-xs text-slate-500">
+              As an administrator, this action will <span className="font-bold text-red-600">permanently remove</span> the customer record from the database.
+            </p>
+          ) : (
+            <div className="rounded-xl bg-amber-50 border border-amber-200 p-3 text-xs text-amber-800">
+              <span className="font-bold block mb-1">Staff Authorization Rule:</span>
+              Only administrators can permanently delete customer records. Submitting this will report a deletion request to the shop owner for review.
+            </div>
+          )}
+        </div>
         <div className="flex justify-end space-x-3">
           <button
             onClick={() => setIsDeleteModalOpen(false)}
@@ -460,9 +493,15 @@ export default function CustomersPage() {
           <button
             onClick={handleDeleteCustomer}
             disabled={formSubmitting}
-            className="rounded-xl bg-red-600 px-4 py-2 text-xs font-bold text-white shadow hover:bg-red-500 disabled:opacity-50"
+            className={`rounded-xl px-4 py-2 text-xs font-bold text-white shadow transition disabled:opacity-50 ${
+              user?.role === 'admin' ? 'bg-red-600 hover:bg-red-500' : 'bg-amber-600 hover:bg-amber-500'
+            }`}
           >
-            {formSubmitting ? 'Deleting...' : 'Delete'}
+            {formSubmitting
+              ? 'Submitting...'
+              : user?.role === 'admin'
+              ? 'Permanently Delete'
+              : 'Submit Deletion Request'}
           </button>
         </div>
       </Modal>
