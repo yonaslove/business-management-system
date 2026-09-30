@@ -11,6 +11,18 @@ from app.routers import auth, products, customers, sales, dashboard, admin
 async def lifespan(app: FastAPI):
     # Initialize Database Tables
     Base.metadata.create_all(bind=engine)
+
+    # Auto-migrate SQLite columns if table already existed without new columns
+    with engine.connect() as conn:
+        try:
+            cursor = conn.exec_driver_sql("PRAGMA table_info(users)")
+            columns = [row[1] for row in cursor.fetchall()]
+            if columns and "role" not in columns:
+                conn.exec_driver_sql("ALTER TABLE users ADD COLUMN role VARCHAR DEFAULT 'admin'")
+                conn.commit()
+        except Exception:
+            pass
+
     yield
 
 
