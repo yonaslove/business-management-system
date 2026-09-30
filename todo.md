@@ -15,22 +15,22 @@
 
 ## Repository
 
-* [ ] Create GitHub repository
-* [ ] Repository name: `business-management-system`
-* [ ] Add README.md
-* [ ] Add roadmap.md
-* [ ] Add todo.md
-* [ ] Add `.gitignore`
-* [ ] Add MIT/license if appropriate
-* [ ] Create initial commit
+* [x] Create GitHub repository
+* [x] Repository name: `business-management-system`
+* [x] Add README.md
+* [x] Add roadmap.md
+* [x] Add todo.md
+* [x] Add `.gitignore`
+* [x] Add MIT/license if appropriate
+* [x] Create initial commit
 * [ ] Push repository to GitHub
 
 ## Directory Structure
 
-* [ ] Create `frontend/`
-* [ ] Create `backend/`
-* [ ] Create `docs/`
-* [ ] Create `screenshots/`
+* [x] Create `frontend/`
+* [x] Create `backend/`
+* [x] Create `docs/`
+* [x] Create `screenshots/`
 
 Target:
 
@@ -51,12 +51,12 @@ business-management-system/
 
 ## Next.js
 
-* [ ] Initialize Next.js application
-* [ ] Enable TypeScript
-* [ ] Configure Tailwind CSS
-* [ ] Configure ESLint
-* [ ] Test development server
-* [ ] Test production build
+* [x] Initialize Next.js application
+* [x] Enable TypeScript
+* [x] Configure Tailwind CSS
+* [x] Configure ESLint
+* [x] Test development server
+* [x] Test production build
 
 Commands should ultimately work:
 
@@ -79,17 +79,17 @@ frontend/
 └── public/
 ```
 
-* [ ] Create layout
-* [ ] Create navigation
-* [ ] Create sidebar
-* [ ] Create header
-* [ ] Create reusable button
-* [ ] Create reusable input
-* [ ] Create modal
-* [ ] Create table
-* [ ] Create loading state
-* [ ] Create empty state
-* [ ] Create error state
+* [x] Create layout
+* [x] Create navigation
+* [x] Create sidebar
+* [x] Create header
+* [x] Create reusable button
+* [x] Create reusable input
+* [x] Create modal
+* [x] Create table
+* [x] Create loading state
+* [x] Create empty state
+* [x] Create error state
 
 ---
 
@@ -97,14 +97,14 @@ frontend/
 
 ## Login
 
-* [ ] Create `/login`
-* [ ] Email field
-* [ ] Password field
-* [ ] Login button
-* [ ] Loading state
-* [ ] Error state
-* [ ] Demo login information
-* [ ] Responsive design
+* [x] Create `/login`
+* [x] Email field
+* [x] Password field
+* [x] Login button
+* [x] Loading state
+* [x] Error state
+* [x] Demo login information
+* [x] Responsive design
 
 ---
 
@@ -116,16 +116,16 @@ Create:
 /dashboard
 ```
 
-* [ ] Dashboard title
-* [ ] Business name
-* [ ] Revenue card
-* [ ] Sales card
-* [ ] Product card
-* [ ] Low-stock card
-* [ ] Sales chart
-* [ ] Recent sales table
-* [ ] Low-stock section
-* [ ] Responsive layout
+* [x] Dashboard title
+* [x] Business name
+* [x] Revenue card
+* [x] Sales card
+* [x] Product card
+* [x] Low-stock card
+* [x] Sales chart
+* [x] Recent sales table
+* [x] Low-stock section
+* [x] Responsive layout
 
 ---
 
@@ -137,19 +137,19 @@ Create:
 /products
 ```
 
-* [ ] Products table
-* [ ] Product name
-* [ ] Category
-* [ ] Price
-* [ ] Stock
-* [ ] Status
-* [ ] Add product button
-* [ ] Edit button
-* [ ] Delete button
-* [ ] Search
-* [ ] Filter
-* [ ] Empty state
-* [ ] Loading state
+* [x] Products table
+* [x] Product name
+* [x] Category
+* [x] Price
+* [x] Stock
+* [x] Status
+* [x] Add product button
+* [x] Edit button
+* [x] Delete button
+* [x] Search
+* [x] Filter
+* [x] Empty state
+* [x] Loading state
 
 ---
 
@@ -161,16 +161,16 @@ Create:
 /customers
 ```
 
-* [ ] Customer table
-* [ ] Name
-* [ ] Phone
-* [ ] Email
-* [ ] Total purchases
-* [ ] Add customer
-* [ ] Edit customer
-* [ ] Delete customer
-* [ ] Search
-* [ ] Customer details
+* [x] Customer table
+* [x] Name
+* [x] Phone
+* [x] Email
+* [x] Total purchases
+* [x] Add customer
+* [x] Edit customer
+* [x] Delete customer
+* [x] Search
+* [x] Customer details
 
 ---
 
@@ -182,16 +182,16 @@ Create:
 /sales
 ```
 
-* [ ] Sales table
-* [ ] Customer
-* [ ] Product
-* [ ] Quantity
-* [ ] Total
-* [ ] Date
-* [ ] Create sale
-* [ ] Sale details
-* [ ] Search sales
-* [ ] Filter sales
+* [x] Sales table
+* [x] Customer
+* [x] Product
+* [x] Quantity
+* [x] Total
+* [x] Date
+* [x] Create sale
+* [x] Sale details
+* [x] Search sales
+* [x] Filter sales
 
 ---
 
@@ -201,14 +201,14 @@ Create realistic Ethiopian sample data.
 
 ## Products
 
-* [ ] Coca Cola
-* [ ] Water
-* [ ] Biscuit
-* [ ] Bread
-* [ ] Juice
-* [ ] Soap
-* [ ] Coffee
-* [ ] Sugar
+* [x] Coca Cola
+* [x] Water
+* [x] Biscuit
+* [x] Bread
+* [x] Juice
+* [x] Soap
+* [x] Coffee
+* [x] Sugar
 
 Use:
 
@@ -222,20 +222,20 @@ rather than USD.
 
 Create:
 
-* [ ] Abebe
-* [ ] Hana
-* [ ] Dawit
-* [ ] Selam
-* [ ] Meron
+* [x] Abebe
+* [x] Hana
+* [x] Dawit
+* [x] Selam
+* [x] Meron
 
 Use fictional demo information.
 
 ## Sales
 
-* [ ] Create realistic sales
-* [ ] Different quantities
-* [ ] Different dates
-* [ ] Different customers
+* [x] Create realistic sales
+* [x] Different quantities
+* [x] Different dates
+* [x] Different customers
 
 ---
 
