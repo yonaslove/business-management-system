@@ -1,0 +1,115 @@
+'use client';
+
+import React from 'react';
+import Link from 'next/link';
+import { usePathname } from 'next/navigation';
+import { 
+  LayoutDashboard, 
+  Package, 
+  Users, 
+  ShoppingCart, 
+  Settings, 
+  Store,
+  LogOut,
+  X
+} from 'lucide-react';
+import { useAuth } from '@/lib/auth';
+
+interface SidebarProps {
+  isOpen: boolean;
+  onClose: () => void;
+}
+
+export const Sidebar: React.FC<SidebarProps> = ({ isOpen, onClose }) => {
+  const pathname = usePathname();
+  const { user, logout } = useAuth();
+
+  const navigation = [
+    { name: 'Dashboard', href: '/dashboard', icon: LayoutDashboard },
+    { name: 'Products & Stock', href: '/products', icon: Package },
+    { name: 'Customers', href: '/customers', icon: Users },
+    { name: 'Sales & POS', href: '/sales', icon: ShoppingCart },
+    { name: 'Settings', href: '/settings', icon: Settings },
+  ];
+
+  return (
+    <>
+      {/* Mobile backdrop */}
+      {isOpen && (
+        <div 
+          className="fixed inset-0 z-40 bg-slate-900/50 backdrop-blur-sm lg:hidden"
+          onClick={onClose}
+        />
+      )}
+
+      {/* Sidebar container */}
+      <aside 
+        className={`fixed top-0 bottom-0 left-0 z-50 flex w-72 flex-col bg-slate-900 text-white transition-transform duration-300 lg:static lg:translate-x-0 ${
+          isOpen ? 'translate-x-0' : '-translate-x-full'
+        }`}
+      >
+        {/* Brand header */}
+        <div className="flex h-16 items-center justify-between border-b border-slate-800 px-6">
+          <div className="flex items-center space-x-3">
+            <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-emerald-600 text-white shadow-md shadow-emerald-500/20">
+              <Store className="h-6 w-6" />
+            </div>
+            <div>
+              <span className="text-base font-bold tracking-tight text-white block">
+                {user?.business_name || 'Yoni Mini Market'}
+              </span>
+              <span className="text-xs text-emerald-400 font-medium">Retail ERP • ETB</span>
+            </div>
+          </div>
+          <button 
+            onClick={onClose}
+            className="rounded-lg p-1.5 text-slate-400 hover:bg-slate-800 hover:text-white lg:hidden"
+          >
+            <X className="h-5 w-5" />
+          </button>
+        </div>
+
+        {/* Navigation links */}
+        <nav className="flex-1 space-y-1.5 px-4 py-6">
+          {navigation.map((item) => {
+            const isActive = pathname === item.href || (item.href !== '/dashboard' && pathname?.startsWith(item.href));
+            const Icon = item.icon;
+
+            return (
+              <Link
+                key={item.name}
+                href={item.href}
+                onClick={onClose}
+                className={`group flex items-center rounded-xl px-4 py-3 text-sm font-medium transition-all ${
+                  isActive
+                    ? 'bg-emerald-600 text-white shadow-lg shadow-emerald-600/30'
+                    : 'text-slate-400 hover:bg-slate-800/80 hover:text-slate-200'
+                }`}
+              >
+                <Icon className={`mr-3.5 h-5 w-5 flex-shrink-0 transition-transform ${isActive ? 'text-white' : 'text-slate-400 group-hover:text-slate-200'}`} />
+                {item.name}
+              </Link>
+            );
+          })}
+        </nav>
+
+        {/* User footer & logout */}
+        <div className="border-t border-slate-800 p-4">
+          <div className="flex items-center justify-between rounded-xl bg-slate-800/60 p-3">
+            <div className="truncate pr-2">
+              <p className="text-sm font-medium text-white truncate">{user?.name || 'Owner'}</p>
+              <p className="text-xs text-slate-400 truncate">{user?.email || 'demo@yonimarket.et'}</p>
+            </div>
+            <button
+              onClick={logout}
+              title="Logout"
+              className="rounded-lg p-2 text-slate-400 hover:bg-red-500/20 hover:text-red-400 transition"
+            >
+              <LogOut className="h-4 w-4" />
+            </button>
+          </div>
+        </div>
+      </aside>
+    </>
+  );
+};
