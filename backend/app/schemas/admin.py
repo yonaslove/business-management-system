@@ -31,6 +31,7 @@ class ActivityLogOut(BaseModel):
     entity_id: Optional[int] = None
     entity_name: str
     details: str
+    payload: Optional[str] = None
     status: str  # PENDING_APPROVAL, APPROVED, DISMISSED, LOGGED
     created_at: datetime
 

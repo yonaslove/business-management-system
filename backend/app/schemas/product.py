@@ -51,3 +51,8 @@ class ProductOut(ProductBase):
     updated_at: datetime
 
     model_config = ConfigDict(from_attributes=True)
+
+
+class ProductUpdateOut(ProductOut):
+    message: Optional[str] = None
+    status: Optional[str] = "UPDATED"  # "UPDATED" or "PENDING_APPROVAL"

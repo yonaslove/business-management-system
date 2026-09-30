@@ -266,6 +266,7 @@ export default function AdminPage() {
                     const isPending = act.status === 'PENDING_APPROVAL';
                     const isPriceChange = act.action === 'PRICE_CHANGE';
                     const isDeleteReq = act.action === 'DELETE_REQUEST';
+                    const isPriceStockReq = act.action === 'PRICE_STOCK_REQUEST' || act.action === 'PRICE_CHANGE_REQUEST' || act.action === 'STOCK_CHANGE_REQUEST';
                     const isPermDelete = act.action === 'DELETE_PERMANENT';
 
                     return (
@@ -273,7 +274,9 @@ export default function AdminPage() {
                         key={act.id}
                         className={`rounded-2xl border bg-white p-5 shadow-sm transition ${
                           isPending 
-                            ? 'border-amber-300 bg-amber-50/20 ring-1 ring-amber-300' 
+                            ? isDeleteReq 
+                              ? 'border-red-300 bg-red-50/20 ring-1 ring-red-300' 
+                              : 'border-amber-300 bg-amber-50/20 ring-1 ring-amber-300'
                             : 'border-slate-200/80'
                         }`}
                       >
@@ -282,13 +285,13 @@ export default function AdminPage() {
                             <div className={`mt-0.5 rounded-xl p-2.5 ${
                               isDeleteReq 
                                 ? 'bg-red-50 text-red-600' 
-                                : isPriceChange 
+                                : isPriceStockReq || isPriceChange 
                                 ? 'bg-amber-50 text-amber-600' 
                                 : 'bg-emerald-50 text-emerald-600'
                             }`}>
                               {isDeleteReq ? (
                                 <AlertTriangle className="h-5 w-5" />
-                              ) : isPriceChange ? (
+                              ) : isPriceStockReq || isPriceChange ? (
                                 <DollarSign className="h-5 w-5" />
                               ) : (
                                 <ShieldCheck className="h-5 w-5" />
@@ -299,7 +302,9 @@ export default function AdminPage() {
                               <div className="flex items-center space-x-2">
                                 <span className={`text-[11px] font-bold px-2.5 py-0.5 rounded-full uppercase tracking-wider ${
                                   isPending
-                                    ? 'bg-amber-100 text-amber-800 border border-amber-300'
+                                    ? isDeleteReq 
+                                      ? 'bg-red-100 text-red-800 border border-red-300'
+                                      : 'bg-amber-100 text-amber-800 border border-amber-300'
                                     : act.status === 'APPROVED'
                                     ? 'bg-emerald-100 text-emerald-800'
                                     : act.status === 'DISMISSED'
@@ -310,7 +315,7 @@ export default function AdminPage() {
                                 </span>
                                 <span className="text-xs text-slate-400">•</span>
                                 <span className="text-xs font-semibold text-slate-600">
-                                  {act.action.replace('_', ' ')}
+                                  {act.action.replace(/_/g, ' ')}
                                 </span>
                               </div>
 
@@ -332,18 +337,33 @@ export default function AdminPage() {
                           {/* Admin Action Buttons for Pending Requests */}
                           {isPending && (
                             <div className="flex sm:flex-col lg:flex-row items-center gap-2 pt-3 sm:pt-0 border-t sm:border-t-0 border-slate-100">
-                              <button
-                                onClick={() => handleApproveActivity(act.id)}
-                                disabled={actionLoadingId === act.id}
-                                className="flex-1 sm:flex-initial inline-flex items-center justify-center rounded-xl bg-red-600 px-3.5 py-2 text-xs font-bold text-white shadow-sm hover:bg-red-500 disabled:opacity-50 transition"
-                              >
-                                {actionLoadingId === act.id ? (
-                                  <Loader2 className="h-3.5 w-3.5 animate-spin mr-1.5" />
-                                ) : (
-                                  <Trash2 className="h-3.5 w-3.5 mr-1.5" />
-                                )}
-                                Approve & Permanently Delete
-                              </button>
+                              {isDeleteReq ? (
+                                <button
+                                  onClick={() => handleApproveActivity(act.id)}
+                                  disabled={actionLoadingId === act.id}
+                                  className="flex-1 sm:flex-initial inline-flex items-center justify-center rounded-xl bg-red-600 px-3.5 py-2 text-xs font-bold text-white shadow-sm hover:bg-red-500 disabled:opacity-50 transition"
+                                >
+                                  {actionLoadingId === act.id ? (
+                                    <Loader2 className="h-3.5 w-3.5 animate-spin mr-1.5" />
+                                  ) : (
+                                    <Trash2 className="h-3.5 w-3.5 mr-1.5" />
+                                  )}
+                                  Approve & Permanently Delete
+                                </button>
+                              ) : (
+                                <button
+                                  onClick={() => handleApproveActivity(act.id)}
+                                  disabled={actionLoadingId === act.id}
+                                  className="flex-1 sm:flex-initial inline-flex items-center justify-center rounded-xl bg-emerald-600 px-3.5 py-2 text-xs font-bold text-white shadow-sm hover:bg-emerald-500 disabled:opacity-50 transition"
+                                >
+                                  {actionLoadingId === act.id ? (
+                                    <Loader2 className="h-3.5 w-3.5 animate-spin mr-1.5" />
+                                  ) : (
+                                    <CheckCircle2 className="h-3.5 w-3.5 mr-1.5" />
+                                  )}
+                                  Approve & Apply Changes
+                                </button>
+                              )}
 
                               <button
                                 onClick={() => handleDismissActivity(act.id)}

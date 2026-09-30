@@ -1,3 +1,4 @@
+import json
 from typing import List, Optional
 from fastapi import APIRouter, Depends, HTTPException, Query, status
 from sqlalchemy.orm import Session
@@ -11,6 +12,7 @@ from app.schemas.product import (
     ProductCreate,
     ProductUpdate,
     ProductOut,
+    ProductUpdateOut,
     CategoryCreate,
     CategoryOut
 )
@@ -145,7 +147,7 @@ def create_product(
     return serialize_product(product)
 
 
-@router.put("/products/{product_id}", response_model=ProductOut)
+@router.put("/products/{product_id}", response_model=ProductUpdateOut)
 def update_product(
     product_id: int,
     product_in: ProductUpdate,
@@ -159,16 +161,94 @@ def update_product(
     if not product:
         raise HTTPException(status_code=404, detail="Product not found")
 
-    # Detect price change for audit logging
-    if product_in.price is not None and product_in.price != product.price:
+    has_price_change = product_in.price is not None and product_in.price != product.price
+    has_stock_change = product_in.stock_quantity is not None and product_in.stock_quantity != product.stock_quantity
+
+    if current_user.role != "admin":
+        # EMPLOYEE ROLE: Cannot directly alter price or stock quantity
+        if has_price_change or has_stock_change:
+            payload_dict = {}
+            requested_items = []
+
+            if has_price_change:
+                if product_in.price < 0:
+                    raise HTTPException(status_code=400, detail="Price cannot be negative")
+                payload_dict["price"] = product_in.price
+                requested_items.append(f"Price: {product.price:.2f} -> {product_in.price:.2f} ETB")
+
+            if has_stock_change:
+                if product_in.stock_quantity < 0:
+                    raise HTTPException(status_code=400, detail="Stock quantity cannot be negative")
+                payload_dict["stock_quantity"] = product_in.stock_quantity
+                requested_items.append(f"Stock: {product.stock_quantity} -> {product_in.stock_quantity} units")
+
+            # Apply safe non-financial metadata if provided
+            if product_in.name is not None:
+                product.name = product_in.name.strip()
+            if product_in.description is not None:
+                product.description = product_in.description.strip() if product_in.description else None
+            if product_in.low_stock_threshold is not None:
+                product.low_stock_threshold = product_in.low_stock_threshold
+            if product_in.category_id is not None:
+                product.category_id = product_in.category_id
+            if product_in.sku is not None:
+                product.sku = product_in.sku.strip() if product_in.sku else None
+
+            # Create approval request for admin
+            details_str = (
+                f"Employee {current_user.name} requested modifications for '{product.name}': "
+                f"{', '.join(requested_items)}. Requires administrator approval."
+            )
+            log = ActivityLog(
+                business_id=current_user.business_id,
+                user_id=current_user.id,
+                user_name=current_user.name,
+                action="PRICE_STOCK_REQUEST",
+                entity_type="product",
+                entity_id=product.id,
+                entity_name=product.name,
+                details=details_str,
+                payload=json.dumps(payload_dict),
+                status="PENDING_APPROVAL"
+            )
+            db.add(log)
+            db.commit()
+            db.refresh(product)
+
+            res = serialize_product(product)
+            res["status"] = "PENDING_APPROVAL"
+            res["message"] = (
+                f"Price and quantity modifications ({', '.join(requested_items)}) "
+                "cannot be changed directly by staff. Approval request submitted to store administrator."
+            )
+            return res
+
+        # Employee updated non-financial metadata only
+        if product_in.name is not None:
+            product.name = product_in.name.strip()
+        if product_in.description is not None:
+            product.description = product_in.description.strip() if product_in.description else None
+        if product_in.low_stock_threshold is not None:
+            product.low_stock_threshold = product_in.low_stock_threshold
+        if product_in.category_id is not None:
+            product.category_id = product_in.category_id
+        if product_in.sku is not None:
+            product.sku = product_in.sku.strip() if product_in.sku else None
+
+        db.commit()
+        db.refresh(product)
+        res = serialize_product(product)
+        res["status"] = "UPDATED"
+        res["message"] = "Product details updated successfully."
+        return res
+
+    # ADMIN ROLE: Full authority to change price, stock, and all attributes immediately
+    if has_price_change:
         if product_in.price < 0:
             raise HTTPException(status_code=400, detail="Price cannot be negative")
         old_price = product.price
         new_price = product_in.price
         product.price = new_price
-
-        # Record activity log
-        user_role_label = "Employee" if current_user.role == "employee" else "Admin"
         log = ActivityLog(
             business_id=current_user.business_id,
             user_id=current_user.id,
@@ -177,7 +257,26 @@ def update_product(
             entity_type="product",
             entity_id=product.id,
             entity_name=product.name,
-            details=f"{user_role_label} {current_user.name} changed price of '{product.name}' from {old_price:.2f} ETB to {new_price:.2f} ETB.",
+            details=f"Admin {current_user.name} changed price of '{product.name}' from {old_price:.2f} ETB to {new_price:.2f} ETB.",
+            status="LOGGED"
+        )
+        db.add(log)
+
+    if has_stock_change:
+        if product_in.stock_quantity < 0:
+            raise HTTPException(status_code=400, detail="Stock quantity cannot be negative")
+        old_stock = product.stock_quantity
+        new_stock = product_in.stock_quantity
+        product.stock_quantity = new_stock
+        log = ActivityLog(
+            business_id=current_user.business_id,
+            user_id=current_user.id,
+            user_name=current_user.name,
+            action="STOCK_UPDATE",
+            entity_type="product",
+            entity_id=product.id,
+            entity_name=product.name,
+            details=f"Admin {current_user.name} adjusted stock of '{product.name}' from {old_stock} to {new_stock} units.",
             status="LOGGED"
         )
         db.add(log)
@@ -186,10 +285,6 @@ def update_product(
         product.name = product_in.name.strip()
     if product_in.description is not None:
         product.description = product_in.description.strip() if product_in.description else None
-    if product_in.stock_quantity is not None:
-        if product_in.stock_quantity < 0:
-            raise HTTPException(status_code=400, detail="Stock quantity cannot be negative")
-        product.stock_quantity = product_in.stock_quantity
     if product_in.low_stock_threshold is not None:
         product.low_stock_threshold = product_in.low_stock_threshold
     if product_in.category_id is not None:
@@ -199,7 +294,10 @@ def update_product(
 
     db.commit()
     db.refresh(product)
-    return serialize_product(product)
+    res = serialize_product(product)
+    res["status"] = "UPDATED"
+    res["message"] = "Product updated successfully."
+    return res
 
 
 @router.delete("/products/{product_id}")

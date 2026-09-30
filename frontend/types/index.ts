@@ -29,11 +29,12 @@ export interface ActivityLog {
   business_id: number;
   user_id: number;
   user_name: string;
-  action: 'DELETE_REQUEST' | 'DELETE_PERMANENT' | 'PRICE_CHANGE' | 'STOCK_UPDATE' | 'HIRE_EMPLOYEE' | 'REMOVE_EMPLOYEE' | string;
+  action: 'DELETE_REQUEST' | 'DELETE_PERMANENT' | 'PRICE_CHANGE' | 'STOCK_UPDATE' | 'PRICE_STOCK_REQUEST' | 'HIRE_EMPLOYEE' | 'REMOVE_EMPLOYEE' | string;
   entity_type: 'product' | 'customer' | 'sale' | 'user' | string;
   entity_id?: number | null;
   entity_name: string;
   details: string;
+  payload?: string | null;
   status: 'PENDING_APPROVAL' | 'APPROVED' | 'DISMISSED' | 'LOGGED';
   created_at: string;
 }

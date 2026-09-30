@@ -23,6 +23,15 @@ async def lifespan(app: FastAPI):
         except Exception:
             pass
 
+        try:
+            cursor = conn.exec_driver_sql("PRAGMA table_info(activity_logs)")
+            columns = [row[1] for row in cursor.fetchall()]
+            if columns and "payload" not in columns:
+                conn.exec_driver_sql("ALTER TABLE activity_logs ADD COLUMN payload TEXT")
+                conn.commit()
+        except Exception:
+            pass
+
     yield
 
 

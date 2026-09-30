@@ -161,7 +161,7 @@ export default function ProductsPage() {
     setFormSubmitting(true);
     setFormError(null);
     try {
-      await apiRequest(`/products/${activeProduct.id}`, {
+      const res = await apiRequest<any>(`/products/${activeProduct.id}`, {
         method: 'PUT',
         body: JSON.stringify({
           name: formData.name,
@@ -174,6 +174,17 @@ export default function ProductsPage() {
         }),
       });
       setIsEditModalOpen(false);
+      if (res?.status === 'PENDING_APPROVAL') {
+        setNotification({
+          message: res.message || 'Price/quantity change request submitted to administrator for approval.',
+          type: 'amber',
+        });
+      } else {
+        setNotification({
+          message: 'Product updated successfully.',
+          type: 'success',
+        });
+      }
       loadData();
     } catch (err: any) {
       setFormError(err.message || 'Failed to update product');
@@ -504,6 +515,12 @@ export default function ProductsPage() {
         onClose={() => setIsEditModalOpen(false)}
         title="Edit Product"
       >
+        {user?.role === 'employee' && (
+          <div className="mb-4 rounded-xl bg-amber-50 p-3.5 text-xs text-amber-900 border border-amber-200">
+            <span className="font-bold block mb-1">Staff Authorization Notice:</span>
+            Staff members cannot directly modify Price or Stock Quantity. Submitting price/stock alterations will create a change request for administrator approval.
+          </div>
+        )}
         {formError && (
           <div className="mb-4 rounded-xl bg-red-50 p-3 text-xs text-red-600 border border-red-200">
             {formError}
@@ -588,7 +605,11 @@ export default function ProductsPage() {
               disabled={formSubmitting}
               className="rounded-xl bg-emerald-600 px-5 py-2 text-xs font-bold text-white shadow hover:bg-emerald-500 disabled:opacity-50"
             >
-              {formSubmitting ? 'Updating...' : 'Update Product'}
+              {formSubmitting
+                ? 'Submitting...'
+                : user?.role === 'admin'
+                ? 'Update Product'
+                : 'Submit for Admin Approval'}
             </button>
           </div>
         </form>

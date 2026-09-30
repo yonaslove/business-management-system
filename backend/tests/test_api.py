@@ -168,37 +168,46 @@ def test_employee_and_admin_controls():
         "stock_quantity": 20
     }, headers=admin_headers).json()
 
-    # 6. Employee changes price -> recorded in audit log
+    # 6. Employee attempts to change price -> NOT changed directly, submitted for approval
     update_res = client.put(f"/api/products/{test_prod['id']}", json={
         "price": 18.5
     }, headers=emp_headers)
     assert update_res.status_code == 200
-    assert update_res.json()["price"] == 18.5
+    assert update_res.json()["status"] == "PENDING_APPROVAL"
+    assert update_res.json()["price"] == 15.0  # Remains unchanged!
 
-    # 7. Employee attempts to delete product -> NOT deleted, reported to admin as PENDING_APPROVAL
+    # 7. Employee attempts to delete product -> NOT deleted, reported as PENDING_APPROVAL
     del_res = client.delete(f"/api/products/{test_prod['id']}", headers=emp_headers)
     assert del_res.status_code == 200
     assert del_res.json()["status"] == "PENDING_APPROVAL"
 
-    # Product still exists in DB
+    # Product still exists in DB with original price
     prod_check = client.get(f"/api/products/{test_prod['id']}", headers=admin_headers)
     assert prod_check.status_code == 200
+    assert prod_check.json()["price"] == 15.0
 
     # 8. Admin reviews activities
     activities = client.get("/api/admin/activities", headers=admin_headers).json()
     assert len(activities) >= 2
-    # Verify price change and delete request are in audit log
     actions = [a["action"] for a in activities]
-    assert "PRICE_CHANGE" in actions
+    assert "PRICE_STOCK_REQUEST" in actions
     assert "DELETE_REQUEST" in actions
 
-    # Find the delete request
+    # 9. Admin approves price change request -> price updates to 18.5
+    price_req = next(a for a in activities if a["action"] == "PRICE_STOCK_REQUEST")
+    assert price_req["status"] == "PENDING_APPROVAL"
+    appr_price = client.post(f"/api/admin/activities/{price_req['id']}/approve", headers=admin_headers)
+    assert appr_price.status_code == 200
+
+    # Check product price is now updated to 18.5
+    prod_updated = client.get(f"/api/products/{test_prod['id']}", headers=admin_headers)
+    assert prod_updated.json()["price"] == 18.5
+
+    # 10. Admin approves deletion request -> permanently deletes product!
     delete_req = next(a for a in activities if a["action"] == "DELETE_REQUEST")
     assert delete_req["status"] == "PENDING_APPROVAL"
-
-    # 9. Admin approves deletion request -> permanently deletes product!
-    appr_res = client.post(f"/api/admin/activities/{delete_req['id']}/approve", headers=admin_headers)
-    assert appr_res.status_code == 200
+    appr_del = client.post(f"/api/admin/activities/{delete_req['id']}/approve", headers=admin_headers)
+    assert appr_del.status_code == 200
 
     # Product is now permanently deleted
     prod_gone = client.get(f"/api/products/{test_prod['id']}", headers=admin_headers)

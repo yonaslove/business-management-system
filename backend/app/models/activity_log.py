@@ -16,6 +16,7 @@ class ActivityLog(Base):
     entity_id = Column(Integer, nullable=True)
     entity_name = Column(String(255), nullable=False)
     details = Column(Text, nullable=False)
+    payload = Column(Text, nullable=True)  # JSON-encoded changes requested
     status = Column(String(50), nullable=False, default="LOGGED")  # PENDING_APPROVAL, APPROVED, DISMISSED, LOGGED
     created_at = Column(DateTime, default=lambda: datetime.now(timezone.utc), index=True)
 

@@ -1,3 +1,4 @@
+import json
 from typing import List, Optional
 from fastapi import APIRouter, Depends, HTTPException, Query, status
 from sqlalchemy.orm import Session
@@ -141,7 +142,10 @@ def approve_activity(
     if not activity:
         raise HTTPException(status_code=404, detail="Activity log not found.")
 
-    if activity.action == "DELETE_REQUEST" and activity.status == "PENDING_APPROVAL":
+    if activity.status != "PENDING_APPROVAL":
+        raise HTTPException(status_code=400, detail="This activity request is not pending approval.")
+
+    if activity.action == "DELETE_REQUEST":
         # Permanently delete the requested entity
         if activity.entity_type == "product" and activity.entity_id:
             product = db.query(Product).filter(
@@ -159,11 +163,45 @@ def approve_activity(
             if customer:
                 db.delete(customer)
 
-    activity.status = "APPROVED"
-    activity.details += f" (Approved & permanently executed by Admin {admin_user.name})"
-    db.commit()
+        activity.status = "APPROVED"
+        activity.details += f" (Approved & permanently executed by Admin {admin_user.name})"
+        db.commit()
+        return {"message": "Deletion request approved and permanently executed."}
 
-    return {"message": "Request approved and permanently executed."}
+    elif activity.action in ("PRICE_STOCK_REQUEST", "PRICE_CHANGE_REQUEST", "STOCK_CHANGE_REQUEST"):
+        applied_notes = []
+        if activity.entity_type == "product" and activity.entity_id:
+            product = db.query(Product).filter(
+                Product.id == activity.entity_id,
+                Product.business_id == admin_user.business_id
+            ).first()
+            if not product:
+                raise HTTPException(status_code=404, detail="Target product no longer exists.")
+
+            if activity.payload:
+                try:
+                    changes = json.loads(activity.payload)
+                    if "price" in changes and changes["price"] is not None:
+                        old_p = product.price
+                        product.price = float(changes["price"])
+                        applied_notes.append(f"Price: {old_p:.2f} -> {product.price:.2f} ETB")
+                    if "stock_quantity" in changes and changes["stock_quantity"] is not None:
+                        old_s = product.stock_quantity
+                        product.stock_quantity = int(changes["stock_quantity"])
+                        applied_notes.append(f"Stock: {old_s} -> {product.stock_quantity} units")
+                except Exception:
+                    pass
+
+        activity.status = "APPROVED"
+        applied_str = f" [{', '.join(applied_notes)}]" if applied_notes else ""
+        activity.details += f" (Approved & applied to catalog by Admin {admin_user.name}{applied_str})"
+        db.commit()
+        return {"message": "Changes approved and applied to product successfully."}
+
+    activity.status = "APPROVED"
+    activity.details += f" (Approved by Admin {admin_user.name})"
+    db.commit()
+    return {"message": "Request approved."}
 
 
 @router.post("/activities/{activity_id}/dismiss")
