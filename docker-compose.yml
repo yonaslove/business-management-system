@@ -1,0 +1,65 @@
+version: '3.8'
+
+services:
+  db:
+    image: postgres:16-alpine
+    container_name: bms_postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER:-bms_user}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-bms_password}
+      POSTGRES_DB: ${POSTGRES_DB:-bms_db}
+    ports:
+      - "${POSTGRES_PORT:-5432}:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-bms_user} -d ${POSTGRES_DB:-bms_db}"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+    networks:
+      - bms_network
+
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: bms_backend
+    restart: unless-stopped
+    environment:
+      - DATABASE_URL=postgresql://${POSTGRES_USER:-bms_user}:${POSTGRES_PASSWORD:-bms_password}@db:5432/${POSTGRES_DB:-bms_db}
+      - SECRET_KEY=${SECRET_KEY:-super-secret-key-change-in-production-yoni-market-jwt}
+      - PROJECT_NAME=Business Management System
+    ports:
+      - "8000:8000"
+    depends_on:
+      db:
+        condition: service_healthy
+    networks:
+      - bms_network
+
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+      args:
+        NEXT_PUBLIC_API_URL: http://localhost:8000/api
+    container_name: bms_frontend
+    restart: unless-stopped
+    ports:
+      - "3000:3000"
+    environment:
+      - NEXT_PUBLIC_API_URL=http://localhost:8000/api
+    depends_on:
+      - backend
+    networks:
+      - bms_network
+
+volumes:
+  postgres_data:
+    driver: local
+
+networks:
+  bms_network:
+    driver: bridge

@@ -13,24 +13,25 @@ async def lifespan(app: FastAPI):
     Base.metadata.create_all(bind=engine)
 
     # Auto-migrate SQLite columns if table already existed without new columns
-    with engine.connect() as conn:
-        try:
-            cursor = conn.exec_driver_sql("PRAGMA table_info(users)")
-            columns = [row[1] for row in cursor.fetchall()]
-            if columns and "role" not in columns:
-                conn.exec_driver_sql("ALTER TABLE users ADD COLUMN role VARCHAR DEFAULT 'admin'")
-                conn.commit()
-        except Exception:
-            pass
+    if engine.dialect.name == "sqlite":
+        with engine.connect() as conn:
+            try:
+                cursor = conn.exec_driver_sql("PRAGMA table_info(users)")
+                columns = [row[1] for row in cursor.fetchall()]
+                if columns and "role" not in columns:
+                    conn.exec_driver_sql("ALTER TABLE users ADD COLUMN role VARCHAR DEFAULT 'admin'")
+                    conn.commit()
+            except Exception:
+                pass
 
-        try:
-            cursor = conn.exec_driver_sql("PRAGMA table_info(activity_logs)")
-            columns = [row[1] for row in cursor.fetchall()]
-            if columns and "payload" not in columns:
-                conn.exec_driver_sql("ALTER TABLE activity_logs ADD COLUMN payload TEXT")
-                conn.commit()
-        except Exception:
-            pass
+            try:
+                cursor = conn.exec_driver_sql("PRAGMA table_info(activity_logs)")
+                columns = [row[1] for row in cursor.fetchall()]
+                if columns and "payload" not in columns:
+                    conn.exec_driver_sql("ALTER TABLE activity_logs ADD COLUMN payload TEXT")
+                    conn.commit()
+            except Exception:
+                pass
 
     yield
 
