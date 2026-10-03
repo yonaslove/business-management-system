@@ -11,7 +11,7 @@ docker compose up -d db
 echo.
 echo Step 2: Starting FastAPI Backend (Port 8000)...
 cd /d "%~dp0backend"
-start "BMS Backend (FastAPI on Port 8000 - PostgreSQL)" cmd /k "python -m uvicorn app.main:app --host 0.0.0.0 --port 8000 --reload"
+start "BMS Backend (FastAPI on Port 8000 - PostgreSQL)" cmd /k "python run.py"
 
 echo.
 echo Step 3: Starting Next.js Frontend (Port 3000)...
