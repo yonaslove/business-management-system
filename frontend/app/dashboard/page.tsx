@@ -66,6 +66,10 @@ export default function DashboardPage() {
       router.push('/login');
       return;
     }
+    if (user?.role === 'delivery') {
+      router.push('/delivery');
+      return;
+    }
     if (user) {
       fetchData();
     }
@@ -261,18 +265,18 @@ export default function DashboardPage() {
                       <div>
                         <h4 className="text-sm font-bold text-slate-800">{prod.name}</h4>
                         <p className="text-xs text-slate-500">
-                          {prod.category_name || 'Uncategorized'} • Price: {prod.price} ETB
+                          {prod.category_name || 'Uncategorized'} • Price: {prod.price.toFixed(2)} {user?.currency_symbol || 'Br'}
                         </p>
                       </div>
                       <div className="text-right">
                         <span
                           className={`inline-block rounded-full px-2.5 py-0.5 text-[10px] font-bold ${
-                            prod.stock_quantity === 0
-                              ? 'bg-red-100 text-red-700 border border-red-200'
+                            prod.stock_quantity <= 0
+                              ? 'bg-red-100 text-red-700 border border-red-300'
                               : 'bg-amber-100 text-amber-800 border border-amber-200'
                           }`}
                         >
-                          {prod.stock_quantity === 0 ? 'OUT OF STOCK' : `ONLY ${prod.stock_quantity} LEFT`}
+                          {prod.stock_quantity <= 0 ? 'EMPTY' : `ONLY ${prod.stock_quantity} LEFT`}
                         </span>
                         <p className="text-[11px] text-slate-400 mt-1">Threshold: {prod.low_stock_threshold}</p>
                       </div>

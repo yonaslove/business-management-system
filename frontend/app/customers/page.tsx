@@ -67,6 +67,10 @@ export default function CustomersPage() {
       router.push('/login');
       return;
     }
+    if (user?.role === 'delivery') {
+      router.push('/delivery');
+      return;
+    }
     if (user) {
       loadCustomers();
     }
@@ -105,11 +109,22 @@ export default function CustomersPage() {
     setFormSubmitting(true);
     setFormError(null);
     try {
-      await apiRequest('/customers', {
+      const res = await apiRequest<any>('/customers', {
         method: 'POST',
         body: JSON.stringify(formData),
       });
       setIsAddModalOpen(false);
+      if (res?.is_verified === false) {
+        setNotification({
+          message: 'Customer submitted for administrator verification.',
+          type: 'amber',
+        });
+      } else {
+        setNotification({
+          message: 'Customer added successfully.',
+          type: 'success',
+        });
+      }
       loadCustomers();
     } catch (err: any) {
       setFormError(err.message || 'Failed to create customer');
@@ -124,11 +139,22 @@ export default function CustomersPage() {
     setFormSubmitting(true);
     setFormError(null);
     try {
-      await apiRequest(`/customers/${activeCustomer.id}`, {
+      const res = await apiRequest<any>(`/customers/${activeCustomer.id}`, {
         method: 'PUT',
         body: JSON.stringify(formData),
       });
       setIsEditModalOpen(false);
+      if (res?.is_verified === false) {
+        setNotification({
+          message: 'Customer modifications submitted for administrator verification.',
+          type: 'amber',
+        });
+      } else {
+        setNotification({
+          message: 'Customer updated successfully.',
+          type: 'success',
+        });
+      }
       loadCustomers();
     } catch (err: any) {
       setFormError(err.message || 'Failed to update customer');
@@ -246,7 +272,7 @@ export default function CustomersPage() {
                       <th className="px-6 py-4">Phone</th>
                       <th className="px-6 py-4">Location</th>
                       <th className="px-6 py-4 text-center">Orders</th>
-                      <th className="px-6 py-4 text-right">Lifetime Spend (ETB)</th>
+                      <th className="px-6 py-4 text-right">Lifetime Spend ({user?.currency_symbol || 'Br'})</th>
                       <th className="px-6 py-4 text-right">Actions</th>
                     </tr>
                   </thead>
@@ -254,7 +280,17 @@ export default function CustomersPage() {
                     {customers.map((c) => (
                       <tr key={c.id} className="hover:bg-slate-50/60 transition">
                         <td className="px-6 py-4">
-                          <div className="font-semibold text-slate-900">{c.name}</div>
+                          <div className="font-semibold text-slate-900 flex items-center space-x-2">
+                            <span>{c.name}</span>
+                            {c.is_verified === false && (
+                              <span 
+                                className="rounded-full bg-amber-50 border border-amber-300 px-2 py-0.5 text-[10px] font-bold text-amber-800"
+                                title="Customer account requires administrator verification"
+                              >
+                                Pending Verification
+                              </span>
+                            )}
+                          </div>
                           {c.email && <div className="text-xs text-slate-400">{c.email}</div>}
                         </td>
                         <td className="px-6 py-4 text-slate-700">
@@ -274,7 +310,7 @@ export default function CustomersPage() {
                               <span className="truncate max-w-[200px]">{c.address}</span>
                             </div>
                           ) : (
-                            <span className="text-slate-400">—</span>
+                            <span className="text-xs text-slate-400">—</span>
                           )}
                         </td>
                         <td className="px-6 py-4 text-center">
@@ -283,7 +319,7 @@ export default function CustomersPage() {
                           </span>
                         </td>
                         <td className="px-6 py-4 text-right font-bold text-slate-900">
-                          {c.total_purchases.toLocaleString()} ETB
+                          {c.total_purchases.toLocaleString()} {user?.currency_symbol || 'Br'}
                         </td>
                         <td className="px-6 py-4 text-right space-x-2">
                           <button

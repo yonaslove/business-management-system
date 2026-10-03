@@ -42,6 +42,11 @@ export default function ProductsPage() {
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
   const [activeProduct, setActiveProduct] = useState<Product | null>(null);
 
+  // Quick Category creation inside Add Product form
+  const [isAddingNewCategory, setIsAddingNewCategory] = useState(false);
+  const [newCategoryName, setNewCategoryName] = useState('');
+  const [categoryCreating, setCategoryCreating] = useState(false);
+
   // Form State
   const [formData, setFormData] = useState({
     name: '',
@@ -83,6 +88,10 @@ export default function ProductsPage() {
       router.push('/login');
       return;
     }
+    if (user?.role === 'delivery') {
+      router.push('/delivery');
+      return;
+    }
     if (user) {
       loadData();
     }
@@ -99,7 +108,30 @@ export default function ProductsPage() {
       description: '',
     });
     setFormError(null);
+    setIsAddingNewCategory(false);
+    setNewCategoryName('');
     setIsAddModalOpen(true);
+  };
+
+  const handleQuickCreateCategory = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!newCategoryName.trim()) return;
+
+    setCategoryCreating(true);
+    try {
+      const newCat = await apiRequest<Category>('/categories', {
+        method: 'POST',
+        body: JSON.stringify({ name: newCategoryName.trim() }),
+      });
+      setCategories((prev) => [...prev, newCat]);
+      setFormData((prev) => ({ ...prev, category_id: newCat.id.toString() }));
+      setNewCategoryName('');
+      setIsAddingNewCategory(false);
+    } catch (err: any) {
+      alert(err.message || 'Failed to create category');
+    } finally {
+      setCategoryCreating(false);
+    }
   };
 
   const handleOpenEdit = (p: Product) => {
@@ -133,7 +165,7 @@ export default function ProductsPage() {
     setFormSubmitting(true);
     setFormError(null);
     try {
-      await apiRequest('/products', {
+      const res = await apiRequest<any>('/products', {
         method: 'POST',
         body: JSON.stringify({
           name: formData.name,
@@ -146,6 +178,17 @@ export default function ProductsPage() {
         }),
       });
       setIsAddModalOpen(false);
+      if (res?.is_verified === false) {
+        setNotification({
+          message: 'Product submitted for administrator verification. Once approved, it will be available for POS sales.',
+          type: 'amber',
+        });
+      } else {
+        setNotification({
+          message: 'Product added to inventory successfully.',
+          type: 'success',
+        });
+      }
       loadData();
     } catch (err: any) {
       setFormError(err.message || 'Failed to create product');
@@ -297,7 +340,7 @@ export default function ProductsPage() {
                 <option value="">All Stock Levels</option>
                 <option value="in_stock">In Stock</option>
                 <option value="low_stock">Low Stock</option>
-                <option value="out_of_stock">Out of Stock</option>
+                <option value="empty">EMPTY (0 Stock)</option>
               </select>
             </div>
           </div>
@@ -329,16 +372,17 @@ export default function ProductsPage() {
                     <tr>
                       <th className="px-6 py-4">Product Name</th>
                       <th className="px-6 py-4">Category</th>
-                      <th className="px-6 py-4 text-right">Price (ETB)</th>
+                      <th className="px-6 py-4 text-right">Price ({user?.currency_symbol || 'Br'})</th>
                       <th className="px-6 py-4 text-center">Stock</th>
-                      <th className="px-6 py-4">Status</th>
+                      <th className="px-6 py-4">Status & Verification</th>
                       <th className="px-6 py-4 text-right">Actions</th>
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-slate-100">
                     {products.map((p) => {
-                      const isLow = p.stock_status === 'LOW STOCK';
-                      const isOut = p.stock_status === 'OUT OF STOCK';
+                      const isEmpty = p.stock_status === 'EMPTY' || p.stock_quantity <= 0;
+                      const isLow = !isEmpty && p.stock_status === 'LOW STOCK';
+                      const isVerified = p.is_verified !== false;
 
                       return (
                         <tr key={p.id} className="hover:bg-slate-50/60 transition">
@@ -352,24 +396,34 @@ export default function ProductsPage() {
                             </span>
                           </td>
                           <td className="px-6 py-4 text-right font-bold text-slate-900">
-                            {p.price.toFixed(2)} ETB
+                            {p.price.toFixed(2)} {user?.currency_symbol || 'Br'}
                           </td>
                           <td className="px-6 py-4 text-center">
                             <span className="font-bold text-slate-800 text-base">{p.stock_quantity}</span>
                             <span className="text-[11px] text-slate-400 block">min: {p.low_stock_threshold}</span>
                           </td>
                           <td className="px-6 py-4">
-                            <span
-                              className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-[11px] font-bold ${
-                                isOut
-                                  ? 'bg-red-100 text-red-700 border border-red-200'
-                                  : isLow
-                                  ? 'bg-amber-100 text-amber-800 border border-amber-200'
-                                  : 'bg-emerald-100 text-emerald-800 border border-emerald-200'
-                              }`}
-                            >
-                              {p.stock_status}
-                            </span>
+                            <div className="flex flex-wrap items-center gap-1.5">
+                              <span
+                                className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-[11px] font-extrabold ${
+                                  isEmpty
+                                    ? 'bg-red-100 text-red-700 border border-red-300'
+                                    : isLow
+                                    ? 'bg-amber-100 text-amber-800 border border-amber-200'
+                                    : 'bg-emerald-100 text-emerald-800 border border-emerald-200'
+                                }`}
+                              >
+                                {isEmpty ? 'EMPTY' : p.stock_status}
+                              </span>
+                              {!isVerified && (
+                                <span 
+                                  className="inline-flex items-center rounded-full bg-amber-50 border border-amber-300 text-amber-800 px-2 py-0.5 text-[10px] font-bold"
+                                  title="Item pending administrator verification before it can be sold"
+                                >
+                                  Pending Verification
+                                </span>
+                              )}
+                            </div>
                           </td>
                           <td className="px-6 py-4 text-right space-x-2">
                             <button
@@ -452,19 +506,49 @@ export default function ProductsPage() {
 
           <div className="grid grid-cols-2 gap-4">
             <div>
-              <label className="block text-xs font-bold uppercase text-slate-600">Category</label>
-              <select
-                value={formData.category_id}
-                onChange={(e) => setFormData({ ...formData, category_id: e.target.value })}
-                className="mt-1 w-full rounded-xl border border-slate-200 px-3.5 py-2 text-sm focus:border-emerald-500 focus:outline-none"
-              >
-                <option value="">Uncategorized</option>
-                {categories.map((c) => (
-                  <option key={c.id} value={c.id}>
-                    {c.name}
-                  </option>
-                ))}
-              </select>
+              <div className="flex items-center justify-between mb-1">
+                <label className="block text-xs font-bold uppercase text-slate-600">Category</label>
+                <button
+                  type="button"
+                  onClick={() => setIsAddingNewCategory(!isAddingNewCategory)}
+                  className="text-[11px] font-bold text-emerald-600 hover:text-emerald-700"
+                >
+                  {isAddingNewCategory ? 'Select Existing' : '+ New Category'}
+                </button>
+              </div>
+
+              {isAddingNewCategory ? (
+                <div className="flex items-center space-x-1.5">
+                  <input
+                    type="text"
+                    placeholder="New category name"
+                    value={newCategoryName}
+                    onChange={(e) => setNewCategoryName(e.target.value)}
+                    className="w-full rounded-xl border border-emerald-400 px-3 py-1.5 text-xs focus:outline-none"
+                  />
+                  <button
+                    type="button"
+                    onClick={handleQuickCreateCategory}
+                    disabled={categoryCreating || !newCategoryName.trim()}
+                    className="rounded-xl bg-emerald-600 px-2.5 py-1.5 text-xs font-bold text-white shadow hover:bg-emerald-500 disabled:opacity-50"
+                  >
+                    {categoryCreating ? '...' : 'Add'}
+                  </button>
+                </div>
+              ) : (
+                <select
+                  value={formData.category_id}
+                  onChange={(e) => setFormData({ ...formData, category_id: e.target.value })}
+                  className="w-full rounded-xl border border-slate-200 px-3.5 py-2 text-sm focus:border-emerald-500 focus:outline-none"
+                >
+                  <option value="">Uncategorized</option>
+                  {categories.map((c) => (
+                    <option key={c.id} value={c.id}>
+                      {c.name}
+                    </option>
+                  ))}
+                </select>
+              )}
             </div>
             <div>
               <label className="block text-xs font-bold uppercase text-slate-600">Low Stock Alert Level</label>
@@ -515,10 +599,10 @@ export default function ProductsPage() {
         onClose={() => setIsEditModalOpen(false)}
         title="Edit Product"
       >
-        {user?.role === 'employee' && (
+        {user?.role !== 'admin' && (
           <div className="mb-4 rounded-xl bg-amber-50 p-3.5 text-xs text-amber-900 border border-amber-200">
-            <span className="font-bold block mb-1">Staff Authorization Notice:</span>
-            Staff members cannot directly modify Price or Stock Quantity. Submitting price/stock alterations will create a change request for administrator approval.
+            <span className="font-bold block mb-1">Staff Verification Notice:</span>
+            Modifications submitted by staff members will be sent to the Business Administrator for approval before verified.
           </div>
         )}
         {formError && (
