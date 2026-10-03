@@ -1,5 +1,5 @@
 from datetime import datetime, timezone
-from sqlalchemy import Column, Integer, String, Float, Text, DateTime, ForeignKey
+from sqlalchemy import Column, Integer, String, Float, Text, DateTime, ForeignKey, Boolean
 from sqlalchemy.orm import relationship
 from app.database.session import Base
 
@@ -10,11 +10,24 @@ class Sale(Base):
     id = Column(Integer, primary_key=True, index=True)
     business_id = Column(Integer, ForeignKey("businesses.id"), nullable=False)
     customer_id = Column(Integer, ForeignKey("customers.id"), nullable=True)
+    user_id = Column(Integer, ForeignKey("users.id"), nullable=True)
     total_amount = Column(Float, nullable=False, default=0.0)  # Total in ETB
     payment_method = Column(String(50), nullable=False, default="Cash")  # Cash, Telebirr, CBE Birr
     notes = Column(Text, nullable=True)
+    payment_receipt = Column(Text, nullable=True)  # Base64 data URL / screenshot / PDF receipt
+    payment_ref = Column(String(100), nullable=True)  # Bank transaction reference ID
+    delivery_notes = Column(Text, nullable=True)
+    delivery_user_id = Column(Integer, ForeignKey("users.id"), nullable=True)
+    delivery_proof_image = Column(Text, nullable=True)  # Base64 photo uploaded by customer confirming receipt
+    customer_acknowledged = Column(Boolean, default=False, nullable=False)
+    customer_acknowledged_at = Column(DateTime, nullable=True)
+    customer_feedback = Column(Text, nullable=True)
     created_at = Column(DateTime, default=lambda: datetime.now(timezone.utc), index=True)
 
     business = relationship("Business", back_populates="sales")
     customer = relationship("Customer", back_populates="sales")
+    user = relationship("User", foreign_keys=[user_id])
+    delivery_user = relationship("User", foreign_keys=[delivery_user_id])
     items = relationship("SaleItem", back_populates="sale", cascade="all, delete-orphan")
+
+
