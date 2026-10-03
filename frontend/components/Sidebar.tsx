@@ -8,12 +8,14 @@ import {
   Package, 
   Users, 
   ShoppingCart, 
+  ShoppingBag,
   Settings, 
   Store,
   LogOut,
   X,
   ShieldCheck,
-  UserCheck
+  UserCheck,
+  Truck
 } from 'lucide-react';
 import { useAuth } from '@/lib/auth';
 
@@ -26,16 +28,33 @@ export const Sidebar: React.FC<SidebarProps> = ({ isOpen, onClose }) => {
   const pathname = usePathname();
   const { user, logout } = useAuth();
 
-  const navigation = [
-    { name: 'Dashboard', href: '/dashboard', icon: LayoutDashboard },
-    { name: 'Products & Stock', href: '/products', icon: Package },
-    { name: 'Customers', href: '/customers', icon: Users },
-    { name: 'Sales & POS', href: '/sales', icon: ShoppingCart },
-    ...(user?.role === 'admin' 
-      ? [{ name: 'Admin & Staff', href: '/admin', icon: ShieldCheck }] 
-      : []),
-    { name: 'Settings', href: '/settings', icon: Settings },
-  ];
+  let navigation = [];
+  if (user?.role === 'delivery') {
+    navigation = [
+      { name: 'Delivery Hub', href: '/delivery', icon: Truck },
+    ];
+  } else if (user?.role === 'employee') {
+    navigation = [
+      { name: 'Staff Workspace', href: '/employee', icon: LayoutDashboard },
+      { name: 'Sales & POS', href: '/sales', icon: ShoppingCart },
+      { name: 'Products & Stock', href: '/products', icon: Package },
+      { name: 'Customers', href: '/customers', icon: Users },
+    ];
+  } else {
+    // Admin & Co-Admin
+    navigation = [
+      { name: 'Dashboard', href: '/dashboard', icon: LayoutDashboard },
+      { name: 'Products & Stock', href: '/products', icon: Package },
+      { name: 'Customers', href: '/customers', icon: Users },
+      { name: 'Sales & POS', href: '/sales', icon: ShoppingCart },
+      { name: 'Online Orders', href: '/orders', icon: ShoppingBag },
+      { name: 'Delivery Hub', href: '/delivery', icon: Truck },
+      { name: 'Staff Workspace', href: '/employee', icon: UserCheck },
+      { name: 'Admin & Reports', href: '/admin', icon: ShieldCheck },
+      { name: 'Settings', href: '/settings', icon: Settings },
+    ];
+  }
+
 
   return (
     <>
@@ -63,7 +82,7 @@ export const Sidebar: React.FC<SidebarProps> = ({ isOpen, onClose }) => {
               <span className="text-base font-bold tracking-tight text-white block truncate">
                 {user?.business_name || 'Business Manager'}
               </span>
-              <span className="text-xs text-emerald-400 font-medium">Retail ERP • ETB</span>
+              <span className="text-xs text-emerald-400 font-medium">Retail ERP • {user?.currency || 'ETB'}</span>
             </div>
           </div>
           <button 
@@ -107,9 +126,13 @@ export const Sidebar: React.FC<SidebarProps> = ({ isOpen, onClose }) => {
                 <span className={`px-1.5 py-0.2 rounded text-[10px] font-bold uppercase ${
                   user?.role === 'admin' 
                     ? 'bg-emerald-500/20 text-emerald-300 border border-emerald-500/30' 
+                    : user?.role === 'co_admin'
+                    ? 'bg-purple-500/20 text-purple-300 border border-purple-500/30'
+                    : user?.role === 'delivery'
+                    ? 'bg-amber-500/20 text-amber-300 border border-amber-500/30'
                     : 'bg-blue-500/20 text-blue-300 border border-blue-500/30'
                 }`}>
-                  {user?.role === 'admin' ? 'Admin' : 'Staff'}
+                  {user?.role === 'admin' ? 'Admin' : user?.role === 'co_admin' ? 'Co-Admin' : user?.role === 'delivery' ? 'Delivery' : 'Staff'}
                 </span>
               </div>
               <p className="text-xs text-slate-400 truncate">{user?.email}</p>
