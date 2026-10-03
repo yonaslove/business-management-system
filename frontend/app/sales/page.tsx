@@ -81,6 +81,10 @@ export default function SalesPage() {
       router.push('/login');
       return;
     }
+    if (user?.role === 'delivery') {
+      router.push('/delivery');
+      return;
+    }
     if (user) {
       loadData();
     }
@@ -110,6 +114,16 @@ export default function SalesPage() {
       return;
     }
 
+    if (prod.is_verified === false) {
+      setCartError(`Cannot sell '${prod.name}'. This product is pending administrator verification.`);
+      return;
+    }
+
+    if (prod.stock_quantity <= 0) {
+      setCartError(`Cannot sell '${prod.name}'. Product is EMPTY (0 stock available).`);
+      return;
+    }
+
     if (itemQuantity <= 0) {
       setCartError('Quantity must be greater than 0.');
       return;
@@ -122,7 +136,7 @@ export default function SalesPage() {
 
     if (totalQtyNeeded > prod.stock_quantity) {
       setCartError(
-        `Insufficient stock for '${prod.name}'. Only ${prod.stock_quantity} available (you already have ${existingQty} in cart).`
+        `Insufficient stock for '${prod.name}'. Available: ${prod.stock_quantity}, requested: ${totalQtyNeeded}.`
       );
       return;
     }
@@ -269,7 +283,7 @@ export default function SalesPage() {
                       <th className="px-6 py-4">Items</th>
                       <th className="px-6 py-4">Payment</th>
                       <th className="px-6 py-4">Date</th>
-                      <th className="px-6 py-4 text-right">Total (ETB)</th>
+                      <th className="px-6 py-4 text-right">Total ({user?.currency_symbol || 'Br'})</th>
                       <th className="px-6 py-4 text-right">Details</th>
                     </tr>
                   </thead>
@@ -309,7 +323,7 @@ export default function SalesPage() {
                             {formattedDate}
                           </td>
                           <td className="px-6 py-4 text-right font-extrabold text-slate-900 text-base">
-                            {s.total_amount.toLocaleString()} ETB
+                            {s.total_amount.toLocaleString()} {user?.currency_symbol || 'Br'}
                           </td>
                           <td className="px-6 py-4 text-right">
                             <button
@@ -366,8 +380,8 @@ export default function SalesPage() {
                 >
                   <option value="">Walk-in Customer (General)</option>
                   {customers.map((c) => (
-                    <option key={c.id} value={c.id}>
-                      {c.name} {c.phone ? `(${c.phone})` : ''}
+                    <option key={c.id} value={c.id} disabled={c.is_verified === false}>
+                      {c.name} {c.phone ? `(${c.phone})` : ''} {c.is_verified === false ? '(Pending Verification)' : ''}
                     </option>
                   ))}
                 </select>
@@ -382,7 +396,7 @@ export default function SalesPage() {
                   onChange={(e) => setPaymentMethod(e.target.value)}
                   className="w-full rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm focus:border-emerald-500 focus:outline-none"
                 >
-                  <option value="Cash">Cash (ETB)</option>
+                  <option value="Cash">Cash ({user?.currency_symbol || 'Br'})</option>
                   <option value="Telebirr">Telebirr</option>
                   <option value="CBE Birr">CBE Birr</option>
                   <option value="Bank Transfer">Bank Transfer</option>
@@ -403,11 +417,21 @@ export default function SalesPage() {
                     onChange={(e) => setSelectedProductId(e.target.value)}
                     className="w-full rounded-xl border border-slate-200 px-3 py-2 text-sm focus:border-emerald-500 focus:outline-none"
                   >
-                    {products.map((p) => (
-                      <option key={p.id} value={p.id} disabled={p.stock_quantity <= 0}>
-                        {p.name} — {p.price} ETB {p.stock_quantity <= 0 ? '(OUT OF STOCK)' : `(${p.stock_quantity} in stock)`}
-                      </option>
-                    ))}
+                    {products.map((p) => {
+                      const isEmpty = p.stock_quantity <= 0;
+                      const isUnverified = p.is_verified === false;
+                      const label = isEmpty 
+                        ? '(EMPTY)' 
+                        : isUnverified 
+                        ? '(Pending Verification)' 
+                        : `(${p.stock_quantity} in stock)`;
+
+                      return (
+                        <option key={p.id} value={p.id} disabled={isEmpty || isUnverified}>
+                          {p.name} — {p.price.toFixed(2)} {user?.currency_symbol || 'Br'} {label}
+                        </option>
+                      );
+                    })}
                   </select>
                 </div>
 
