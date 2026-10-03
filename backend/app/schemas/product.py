@@ -45,7 +45,8 @@ class ProductUpdate(BaseModel):
 class ProductOut(ProductBase):
     id: int
     business_id: int
-    stock_status: str = "IN STOCK"  # IN STOCK, LOW STOCK, OUT OF STOCK
+    is_verified: bool = True
+    stock_status: str = "IN STOCK"  # IN STOCK, LOW STOCK, EMPTY
     category_name: Optional[str] = None
     created_at: datetime
     updated_at: datetime
@@ -56,3 +57,4 @@ class ProductOut(ProductBase):
 class ProductUpdateOut(ProductOut):
     message: Optional[str] = None
     status: Optional[str] = "UPDATED"  # "UPDATED" or "PENDING_APPROVAL"
+
