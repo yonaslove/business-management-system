@@ -1,29 +1,73 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useMemo } from 'react';
 import Link from 'next/link';
-import { Store, ArrowRight, AlertCircle, Loader2 } from 'lucide-react';
+import { Store, ArrowRight, AlertCircle, Loader2, Check, X, ShieldAlert, ShieldCheck } from 'lucide-react';
 import { useAuth } from '@/lib/auth';
+
+const COMMON_CURRENCIES = [
+  { code: 'ETB', name: 'Ethiopian Birr (Default)', symbol: 'Br' },
+  { code: 'USD', name: 'US Dollar', symbol: '$' },
+  { code: 'EUR', name: 'Euro', symbol: '€' },
+  { code: 'GBP', name: 'British Pound', symbol: '£' },
+  { code: 'KES', name: 'Kenyan Shilling', symbol: 'KSh' },
+  { code: 'AED', name: 'UAE Dirham', symbol: 'AED' },
+  { code: 'SAR', name: 'Saudi Riyal', symbol: 'SAR' },
+  { code: 'CNY', name: 'Chinese Yuan', symbol: '¥' },
+];
 
 export default function RegisterPage() {
   const { register } = useAuth();
   const [formData, setFormData] = useState({
     business_name: '',
     owner_name: '',
+    username: '',
     email: '',
     password: '',
+    currency: 'ETB',
+    currency_symbol: 'Br',
     phone: '',
     address: '',
   });
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
+  // Password strength checks
+  const passwordCriteria = useMemo(() => {
+    const p = formData.password;
+    return {
+      length: p.length >= 8,
+      uppercase: /[A-Z]/.test(p),
+      lowercase: /[a-z]/.test(p),
+      number: /\d/.test(p),
+      symbol: /[!@#$%^&*(),.?":{}|<>_\-+=[\]/\\~`]/.test(p),
+    };
+  }, [formData.password]);
+
+  const score = Object.values(passwordCriteria).filter(Boolean).length;
+  const isPasswordStrong = score === 5;
+
+  const handleCurrencyChange = (code: string) => {
+    const selected = COMMON_CURRENCIES.find((c) => c.code === code);
+    setFormData({
+      ...formData,
+      currency: code,
+      currency_symbol: selected?.symbol || 'Br',
+    });
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!formData.business_name || !formData.owner_name || !formData.email || !formData.password) {
+    if (!formData.business_name || !formData.owner_name || !formData.username || !formData.email || !formData.password) {
       setError('Please fill in all required fields.');
       return;
     }
+
+    if (!isPasswordStrong) {
+      setError('Please meet all strong password requirements before registering.');
+      return;
+    }
+
     setError(null);
     setLoading(true);
     try {
@@ -37,7 +81,7 @@ export default function RegisterPage() {
 
   return (
     <div className="min-h-screen bg-slate-50 flex flex-col justify-center py-12 sm:px-6 lg:px-8">
-      <div className="sm:mx-auto sm:w-full sm:max-w-md text-center">
+      <div className="sm:mx-auto sm:w-full sm:max-w-lg text-center">
         <Link href="/" className="inline-flex items-center space-x-3 mb-6">
           <div className="h-12 w-12 rounded-2xl bg-emerald-600 flex items-center justify-center text-white shadow-md shadow-emerald-600/20">
             <Store className="h-7 w-7" />
@@ -50,11 +94,11 @@ export default function RegisterPage() {
           Register your business
         </h2>
         <p className="mt-1 text-sm text-slate-500">
-          Create an administrator account for your retail store
+          Create an administrator account with secure role and currency setup
         </p>
       </div>
 
-      <div className="mt-8 sm:mx-auto sm:w-full sm:max-w-md px-4 sm:px-0">
+      <div className="mt-8 sm:mx-auto sm:w-full sm:max-w-lg px-4 sm:px-0">
         <div className="bg-white border border-slate-200/90 py-8 px-6 sm:px-10 shadow-lg rounded-3xl">
           {error && (
             <div className="mb-5 rounded-xl bg-red-50 border border-red-200 p-3.5 flex items-start space-x-3 text-red-700">
@@ -78,77 +122,156 @@ export default function RegisterPage() {
               />
             </div>
 
-            <div>
-              <label className="block text-xs font-bold uppercase tracking-wider text-slate-700">
-                Owner / Manager Name *
-              </label>
-              <input
-                type="text"
-                required
-                value={formData.owner_name}
-                onChange={(e) => setFormData({ ...formData, owner_name: e.target.value })}
-                placeholder="e.g. Yonas Demisse"
-                className="mt-1.5 block w-full rounded-xl border border-slate-200 bg-slate-50/50 px-4 py-2.5 text-sm text-slate-900 placeholder-slate-400 focus:border-emerald-600 focus:bg-white focus:outline-none focus:ring-2 focus:ring-emerald-600/20"
-              />
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <div>
+                <label className="block text-xs font-bold uppercase tracking-wider text-slate-700">
+                  Owner / Manager Name *
+                </label>
+                <input
+                  type="text"
+                  required
+                  value={formData.owner_name}
+                  onChange={(e) => setFormData({ ...formData, owner_name: e.target.value })}
+                  placeholder="e.g. Yonas Demisse"
+                  className="mt-1.5 block w-full rounded-xl border border-slate-200 bg-slate-50/50 px-4 py-2.5 text-sm text-slate-900 placeholder-slate-400 focus:border-emerald-600 focus:bg-white focus:outline-none focus:ring-2 focus:ring-emerald-600/20"
+                />
+              </div>
+
+              <div>
+                <label className="block text-xs font-bold uppercase tracking-wider text-slate-700">
+                  Username *
+                </label>
+                <input
+                  type="text"
+                  required
+                  value={formData.username}
+                  onChange={(e) => setFormData({ ...formData, username: e.target.value.toLowerCase().replace(/[^a-z0-9_]/g, '') })}
+                  placeholder="e.g. yonas_admin"
+                  className="mt-1.5 block w-full rounded-xl border border-slate-200 bg-slate-50/50 px-4 py-2.5 text-sm text-slate-900 placeholder-slate-400 focus:border-emerald-600 focus:bg-white focus:outline-none focus:ring-2 focus:ring-emerald-600/20"
+                />
+              </div>
             </div>
 
-            <div>
-              <label className="block text-xs font-bold uppercase tracking-wider text-slate-700">
-                Email Address *
-              </label>
-              <input
-                type="email"
-                required
-                value={formData.email}
-                onChange={(e) => setFormData({ ...formData, email: e.target.value })}
-                placeholder="owner@yourstore.et"
-                className="mt-1.5 block w-full rounded-xl border border-slate-200 bg-slate-50/50 px-4 py-2.5 text-sm text-slate-900 placeholder-slate-400 focus:border-emerald-600 focus:bg-white focus:outline-none focus:ring-2 focus:ring-emerald-600/20"
-              />
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <div>
+                <label className="block text-xs font-bold uppercase tracking-wider text-slate-700">
+                  Email Address *
+                </label>
+                <input
+                  type="email"
+                  required
+                  value={formData.email}
+                  onChange={(e) => setFormData({ ...formData, email: e.target.value })}
+                  placeholder="owner@yourstore.et"
+                  className="mt-1.5 block w-full rounded-xl border border-slate-200 bg-slate-50/50 px-4 py-2.5 text-sm text-slate-900 placeholder-slate-400 focus:border-emerald-600 focus:bg-white focus:outline-none focus:ring-2 focus:ring-emerald-600/20"
+                />
+              </div>
+
+              <div>
+                <label className="block text-xs font-bold uppercase tracking-wider text-slate-700">
+                  Default Store Currency *
+                </label>
+                <select
+                  value={formData.currency}
+                  onChange={(e) => handleCurrencyChange(e.target.value)}
+                  className="mt-1.5 block w-full rounded-xl border border-slate-200 bg-slate-50/50 px-3.5 py-2.5 text-sm text-slate-900 focus:border-emerald-600 focus:bg-white focus:outline-none focus:ring-2 focus:ring-emerald-600/20 font-medium"
+                >
+                  {COMMON_CURRENCIES.map((cur) => (
+                    <option key={cur.code} value={cur.code}>
+                      {cur.code} — {cur.name} ({cur.symbol})
+                    </option>
+                  ))}
+                </select>
+              </div>
             </div>
 
+            {/* Password Field with Strong Password Indicator */}
             <div>
-              <label className="block text-xs font-bold uppercase tracking-wider text-slate-700">
-                Password *
-              </label>
+              <div className="flex items-center justify-between">
+                <label className="block text-xs font-bold uppercase tracking-wider text-slate-700">
+                  Strong Password *
+                </label>
+                <span className={`text-xs font-bold ${
+                  score <= 2 ? 'text-red-500' : score < 5 ? 'text-amber-500' : 'text-emerald-600'
+                }`}>
+                  {score === 0 ? '' : score <= 2 ? 'Weak' : score < 5 ? 'Good' : 'Strong Password ✓'}
+                </span>
+              </div>
               <input
                 type="password"
                 required
                 value={formData.password}
                 onChange={(e) => setFormData({ ...formData, password: e.target.value })}
-                placeholder="••••••••"
+                placeholder="Must include A-Z, a-z, 0-9, and symbol"
                 className="mt-1.5 block w-full rounded-xl border border-slate-200 bg-slate-50/50 px-4 py-2.5 text-sm text-slate-900 placeholder-slate-400 focus:border-emerald-600 focus:bg-white focus:outline-none focus:ring-2 focus:ring-emerald-600/20"
               />
+
+              {/* Strength Meter Bar */}
+              <div className="mt-2 h-1.5 w-full bg-slate-100 rounded-full overflow-hidden">
+                <div
+                  className={`h-full transition-all duration-300 ${
+                    score <= 2 ? 'bg-red-500' : score < 5 ? 'bg-amber-500' : 'bg-emerald-500'
+                  }`}
+                  style={{ width: `${(score / 5) * 100}%` }}
+                />
+              </div>
+
+              {/* Password Requirements Checklist */}
+              <div className="mt-3 rounded-xl bg-slate-50 p-3 border border-slate-100 grid grid-cols-2 gap-2 text-xs">
+                <div className={`flex items-center space-x-1.5 ${passwordCriteria.length ? 'text-emerald-700 font-semibold' : 'text-slate-400'}`}>
+                  {passwordCriteria.length ? <Check className="h-3.5 w-3.5 text-emerald-600" /> : <X className="h-3.5 w-3.5 text-slate-300" />}
+                  <span>At least 8 characters</span>
+                </div>
+                <div className={`flex items-center space-x-1.5 ${passwordCriteria.uppercase ? 'text-emerald-700 font-semibold' : 'text-slate-400'}`}>
+                  {passwordCriteria.uppercase ? <Check className="h-3.5 w-3.5 text-emerald-600" /> : <X className="h-3.5 w-3.5 text-slate-300" />}
+                  <span>Uppercase letter (A-Z)</span>
+                </div>
+                <div className={`flex items-center space-x-1.5 ${passwordCriteria.lowercase ? 'text-emerald-700 font-semibold' : 'text-slate-400'}`}>
+                  {passwordCriteria.lowercase ? <Check className="h-3.5 w-3.5 text-emerald-600" /> : <X className="h-3.5 w-3.5 text-slate-300" />}
+                  <span>Lowercase letter (a-z)</span>
+                </div>
+                <div className={`flex items-center space-x-1.5 ${passwordCriteria.number ? 'text-emerald-700 font-semibold' : 'text-slate-400'}`}>
+                  {passwordCriteria.number ? <Check className="h-3.5 w-3.5 text-emerald-600" /> : <X className="h-3.5 w-3.5 text-slate-300" />}
+                  <span>Number (0-9)</span>
+                </div>
+                <div className={`col-span-2 flex items-center space-x-1.5 ${passwordCriteria.symbol ? 'text-emerald-700 font-semibold' : 'text-slate-400'}`}>
+                  {passwordCriteria.symbol ? <Check className="h-3.5 w-3.5 text-emerald-600" /> : <X className="h-3.5 w-3.5 text-slate-300" />}
+                  <span>Special symbol (!@#$%^&*...)</span>
+                </div>
+              </div>
             </div>
 
-            <div>
-              <label className="block text-xs font-bold uppercase tracking-wider text-slate-700">
-                Phone Number
-              </label>
-              <input
-                type="text"
-                value={formData.phone}
-                onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
-                placeholder="0911223344"
-                className="mt-1.5 block w-full rounded-xl border border-slate-200 bg-slate-50/50 px-4 py-2.5 text-sm text-slate-900 placeholder-slate-400 focus:border-emerald-600 focus:bg-white focus:outline-none focus:ring-2 focus:ring-emerald-600/20"
-              />
-            </div>
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <div>
+                <label className="block text-xs font-bold uppercase tracking-wider text-slate-700">
+                  Phone Number
+                </label>
+                <input
+                  type="text"
+                  value={formData.phone}
+                  onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
+                  placeholder="0911223344"
+                  className="mt-1.5 block w-full rounded-xl border border-slate-200 bg-slate-50/50 px-4 py-2.5 text-sm text-slate-900 placeholder-slate-400 focus:border-emerald-600 focus:bg-white focus:outline-none focus:ring-2 focus:ring-emerald-600/20"
+                />
+              </div>
 
-            <div>
-              <label className="block text-xs font-bold uppercase tracking-wider text-slate-700">
-                Shop Address / Location
-              </label>
-              <input
-                type="text"
-                value={formData.address}
-                onChange={(e) => setFormData({ ...formData, address: e.target.value })}
-                placeholder="e.g. Bole Medhanialem, Addis Ababa"
-                className="mt-1.5 block w-full rounded-xl border border-slate-200 bg-slate-50/50 px-4 py-2.5 text-sm text-slate-900 placeholder-slate-400 focus:border-emerald-600 focus:bg-white focus:outline-none focus:ring-2 focus:ring-emerald-600/20"
-              />
+              <div>
+                <label className="block text-xs font-bold uppercase tracking-wider text-slate-700">
+                  Shop Address / Location
+                </label>
+                <input
+                  type="text"
+                  value={formData.address}
+                  onChange={(e) => setFormData({ ...formData, address: e.target.value })}
+                  placeholder="e.g. Bole Medhanialem, Addis Ababa"
+                  className="mt-1.5 block w-full rounded-xl border border-slate-200 bg-slate-50/50 px-4 py-2.5 text-sm text-slate-900 placeholder-slate-400 focus:border-emerald-600 focus:bg-white focus:outline-none focus:ring-2 focus:ring-emerald-600/20"
+                />
+              </div>
             </div>
 
             <button
               type="submit"
-              disabled={loading}
+              disabled={loading || !isPasswordStrong}
               className="w-full flex items-center justify-center rounded-xl bg-emerald-600 px-4 py-3 text-sm font-bold text-white shadow-md shadow-emerald-600/20 hover:bg-emerald-500 transition disabled:opacity-50 mt-4"
             >
               {loading ? (
@@ -163,7 +286,7 @@ export default function RegisterPage() {
           <div className="mt-6 text-center text-xs text-slate-500 border-t border-slate-100 pt-5">
             Already registered?{' '}
             <Link href="/login" className="font-bold text-emerald-600 hover:text-emerald-700">
-              Sign in
+              Sign in with username
             </Link>
           </div>
         </div>
