@@ -1,462 +1,555 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { 
   Store, 
   ArrowRight, 
-  CheckCircle2, 
-  TrendingUp, 
-  Package, 
-  Users, 
-  ShoppingCart,
-  ShieldCheck,
-  DollarSign,
-  Lock,
-  Sparkles,
-  Layers,
-  ChevronRight,
-  AlertTriangle,
-  Smartphone,
+  ShieldCheck, 
+  TrendingUp,
+  Package,
+  Users,
+  BadgeAlert,
+  Coins,
+  Receipt,
   Check,
-  X
+  Building2,
+  Lock,
+  ShoppingBag
 } from 'lucide-react';
+
 import { useAuth } from '@/lib/auth';
+import { apiRequest } from '@/lib/api';
+
+interface PublicStoreData {
+  business: {
+    id: number;
+    name: string;
+    phone?: string | null;
+    email?: string | null;
+    address?: string | null;
+    currency: string;
+    currency_symbol: string;
+  };
+}
 
 export default function LandingPage() {
   const { user } = useAuth();
-  const [activeTab, setActiveTab] = useState<'pos' | 'audit'>('pos');
+
+  // Store data state
+  const [storeData, setStoreData] = useState<PublicStoreData | null>(null);
+
+  const loadStoreData = async () => {
+    try {
+      const data = await apiRequest<PublicStoreData>('/public/store');
+      setStoreData(data);
+    } catch (err) {
+      console.error('Failed to load store data:', err);
+    }
+  };
+
+  useEffect(() => {
+    loadStoreData();
+  }, []);
+
+  const storeName = storeData?.business.name || 'Retail & Business Management System';
 
   return (
-    <div className="min-h-screen bg-slate-50 text-slate-900 selection:bg-emerald-600 selection:text-white">
+    <div className="min-h-screen bg-slate-50 text-slate-900 selection:bg-emerald-600 selection:text-white font-sans">
       {/* Top Navbar */}
-      <header className="border-b border-slate-200 bg-white/90 backdrop-blur-md sticky top-0 z-50">
-        <div className="max-w-7xl mx-auto px-6 h-20 flex items-center justify-between">
+      <header className="border-b border-slate-200/90 bg-white/95 backdrop-blur-md sticky top-0 z-40 shadow-xs">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 h-20 flex items-center justify-between">
           <Link href="/" className="flex items-center space-x-3 group">
-            <div className="h-11 w-11 rounded-2xl bg-emerald-600 flex items-center justify-center text-white shadow-md shadow-emerald-600/20 group-hover:bg-emerald-500 transition">
+            <div className="h-11 w-11 rounded-2xl bg-emerald-600 flex items-center justify-center text-white shadow-md shadow-emerald-600/25 group-hover:bg-emerald-500 transition">
               <Store className="h-6 w-6" />
             </div>
             <div>
-              <span className="text-xl font-extrabold tracking-tight text-slate-900 block">
-                Business Management System
+              <span className="text-xl font-black tracking-tight text-slate-900 block leading-tight">
+                {storeName}
               </span>
-              <span className="text-xs text-emerald-700 font-bold uppercase tracking-wider">
-                Retail & Inventory ERP • ETB
+              <span className="text-[11px] text-emerald-700 font-bold uppercase tracking-wider block">
+                Point of Sale & Business Operations
               </span>
             </div>
           </Link>
 
-          <div className="flex items-center space-x-4">
+          <div className="flex items-center space-x-3 sm:space-x-5">
+            <a
+              href="#features"
+              className="hidden md:inline-flex text-xs font-bold text-slate-600 hover:text-emerald-700 transition px-2 py-1"
+            >
+              Key Features
+            </a>
+
+            <a
+              href="#hierarchy"
+              className="hidden md:inline-flex text-xs font-bold text-slate-600 hover:text-emerald-700 transition px-2 py-1"
+            >
+              Staff Roles
+            </a>
+
+            <a
+              href="#reports"
+              className="hidden md:inline-flex text-xs font-bold text-slate-600 hover:text-emerald-700 transition px-2 py-1"
+            >
+              Daily Reports
+            </a>
+
+            <Link
+              href="/shop"
+              className="inline-flex items-center space-x-1.5 rounded-xl bg-emerald-50 border border-emerald-200 px-3 py-2 text-xs font-bold text-emerald-800 hover:bg-emerald-100 transition shadow-xs"
+            >
+              <ShoppingBag className="h-3.5 w-3.5 text-emerald-600" />
+              <span>Shop Online</span>
+            </Link>
+
+
             {user ? (
               <Link
                 href="/dashboard"
-                className="inline-flex items-center rounded-xl bg-emerald-600 px-5 py-2.5 text-sm font-bold text-white shadow-md shadow-emerald-600/20 hover:bg-emerald-500 transition"
+                className="inline-flex items-center rounded-xl bg-slate-900 px-4 py-2.5 text-xs font-bold text-white shadow-sm hover:bg-slate-800 transition"
               >
-                Go to Dashboard
-                <ArrowRight className="ml-2 h-4 w-4" />
+                Dashboard
+                <ArrowRight className="ml-1.5 h-3.5 w-3.5" />
               </Link>
             ) : (
-              <>
+              <div className="flex items-center space-x-2">
                 <Link
                   href="/login"
-                  className="text-sm font-bold text-slate-700 hover:text-emerald-700 transition px-3 py-2"
+                  className="inline-flex items-center rounded-xl bg-emerald-600 px-4 py-2.5 text-xs font-bold text-white shadow-md shadow-emerald-600/20 hover:bg-emerald-500 transition"
                 >
-                  Sign In
+                  Staff Portal
+                  <ArrowRight className="ml-1.5 h-3.5 w-3.5" />
                 </Link>
                 <Link
                   href="/register"
-                  className="inline-flex items-center rounded-xl bg-emerald-600 px-5 py-2.5 text-sm font-bold text-white shadow-md shadow-emerald-600/20 hover:bg-emerald-500 transition"
+                  className="hidden sm:inline-flex items-center rounded-xl border border-slate-300 bg-white px-3.5 py-2.5 text-xs font-bold text-slate-700 hover:bg-slate-50 transition shadow-xs"
                 >
-                  Register Business
-                  <ArrowRight className="ml-2 h-4 w-4" />
+                  Register Store
                 </Link>
-              </>
+              </div>
             )}
           </div>
         </div>
       </header>
 
       {/* Hero Section */}
-      <section className="relative overflow-hidden pt-20 pb-24 px-6 bg-gradient-to-b from-white via-slate-50 to-slate-100">
+      <section className="relative overflow-hidden pt-14 pb-20 px-4 sm:px-6 bg-gradient-to-b from-white via-emerald-50/20 to-slate-50 border-b border-slate-200/80">
         <div className="max-w-5xl mx-auto text-center relative z-10">
-          <div className="inline-flex items-center space-x-2 rounded-full border border-emerald-200 bg-emerald-50 px-4 py-1.5 text-xs font-bold text-emerald-800 mb-8 shadow-sm">
+          <div className="inline-flex items-center space-x-2 rounded-full border border-emerald-200 bg-emerald-50 px-4 py-1.5 text-xs font-bold text-emerald-800 mb-6 shadow-xs">
             <ShieldCheck className="h-4 w-4 text-emerald-600" />
-            <span>Smart Retail Platform with Admin RBAC Authorization</span>
+            <span>Multi-Tier Staff Hierarchy • POS Terminal • Automated Daily Reconciliation</span>
           </div>
 
-          <h1 className="text-4xl sm:text-6xl font-black tracking-tight text-slate-900 leading-[1.15]">
-            The modern operating system for your <span className="text-emerald-600">retail store</span>
+          <h1 className="text-4xl sm:text-5xl lg:text-6xl font-black tracking-tight text-slate-900 leading-[1.15]">
+            Unified Retail Operations & <span className="text-emerald-600">Business Management</span>
           </h1>
 
-          <p className="mt-6 text-lg sm:text-xl text-slate-600 max-w-3xl mx-auto leading-relaxed font-normal">
-            Take complete control of products, customers, and daily sales in Ethiopian Birr (ETB). Ring up transactions in seconds, prevent out-of-stock surprises, and protect your store with admin-approved employee deletion controls.
+          <p className="mt-5 text-base sm:text-lg text-slate-600 max-w-3xl mx-auto leading-relaxed">
+            Designed for retail stores, supermarkets, and enterprise merchants. Empower cashiers with fast POS sales, maintain verified inventory with automatic zero-stock alerts, delegate operational tasks to co-managers, and review automated daily financial reconciliation.
           </p>
 
-          <div className="mt-10 flex flex-col sm:flex-row items-center justify-center gap-4">
-            <Link
-              href="/register"
-              className="w-full sm:w-auto inline-flex items-center justify-center rounded-xl bg-emerald-600 px-8 py-4 text-base font-bold text-white shadow-xl shadow-emerald-600/25 hover:bg-emerald-500 hover:scale-[1.01] transition"
-            >
-              Get Started — Register Store
-              <ArrowRight className="ml-2 h-5 w-5" />
-            </Link>
-            <Link
-              href="/login"
-              className="w-full sm:w-auto inline-flex items-center justify-center rounded-xl border border-slate-300 bg-white px-8 py-4 text-base font-bold text-slate-800 shadow-sm hover:bg-slate-50 transition"
-            >
-              Sign In to Existing Store
-            </Link>
+          <div className="mt-8 flex flex-wrap items-center justify-center gap-3.5">
+            {user ? (
+              <Link
+                href="/dashboard"
+                className="inline-flex items-center justify-center rounded-xl bg-emerald-600 px-6 py-3.5 text-sm font-bold text-white shadow-lg shadow-emerald-600/25 hover:bg-emerald-500 hover:scale-[1.01] transition"
+              >
+                Go to Store Dashboard
+                <ArrowRight className="ml-2 h-4 w-4" />
+              </Link>
+            ) : (
+              <>
+                <Link
+                  href="/login"
+                  className="inline-flex items-center justify-center rounded-xl bg-emerald-600 px-6 py-3.5 text-sm font-bold text-white shadow-lg shadow-emerald-600/25 hover:bg-emerald-500 hover:scale-[1.01] transition"
+                >
+                  <Lock className="mr-2 h-4 w-4" />
+                  Staff Portal Sign In
+                </Link>
+
+                <Link
+                  href="/register"
+                  className="inline-flex items-center justify-center rounded-xl border border-slate-300 bg-white px-6 py-3.5 text-sm font-bold text-slate-700 hover:bg-slate-50 transition shadow-xs"
+                >
+                  <Building2 className="mr-2 h-4 w-4 text-slate-500" />
+                  Register New Store
+                </Link>
+
+                <Link
+                  href="/shop"
+                  className="inline-flex items-center justify-center rounded-xl border border-emerald-300 bg-emerald-50 px-5 py-3.5 text-sm font-bold text-emerald-800 hover:bg-emerald-100 transition shadow-xs"
+                >
+                  <ShoppingBag className="mr-2 h-4 w-4 text-emerald-600" />
+                  Order Online
+                </Link>
+
+              </>
+            )}
           </div>
 
-          {/* Interactive Live Platform Showcase */}
-          <div className="mt-16 rounded-3xl border border-slate-200 bg-white p-6 sm:p-8 shadow-xl max-w-4xl mx-auto text-left">
-            <div className="flex flex-wrap items-center justify-between gap-4 border-b border-slate-100 pb-5">
-              <div>
-                <span className="text-xs font-bold uppercase tracking-wider text-slate-500 block">Live Store Platform</span>
-                <h3 className="text-lg font-extrabold text-slate-900">Unified Point of Sale & Security Hub</h3>
+          {/* Quick Pillars Grid */}
+          <div className="mt-14 grid grid-cols-2 md:grid-cols-4 gap-4 max-w-4xl mx-auto text-left">
+            <div className="rounded-2xl border border-slate-200/90 bg-white p-4 shadow-xs">
+              <div className="rounded-xl bg-emerald-50 p-2.5 text-emerald-600 w-fit mb-3">
+                <Receipt className="h-5 w-5" />
               </div>
-              <div className="flex space-x-2">
-                <button
-                  onClick={() => setActiveTab('pos')}
-                  className={`px-3.5 py-1.5 rounded-xl text-xs font-bold transition ${
-                    activeTab === 'pos' 
-                      ? 'bg-emerald-600 text-white shadow-sm' 
-                      : 'bg-slate-100 text-slate-600 hover:bg-slate-200'
-                  }`}
-                >
-                  POS & Sales Engine
-                </button>
-                <button
-                  onClick={() => setActiveTab('audit')}
-                  className={`px-3.5 py-1.5 rounded-xl text-xs font-bold transition ${
-                    activeTab === 'audit' 
-                      ? 'bg-emerald-600 text-white shadow-sm' 
-                      : 'bg-slate-100 text-slate-600 hover:bg-slate-200'
-                  }`}
-                >
-                  Staff Audit & RBAC
-                </button>
-              </div>
+              <h4 className="text-xs font-black text-slate-900">Point of Sale (POS)</h4>
+              <p className="text-[11px] text-slate-500 mt-1">Instant sales processing, barcode search & receipts</p>
             </div>
 
-            {/* Tab 1: POS Engine Preview */}
-            {activeTab === 'pos' && (
-              <div className="mt-6 space-y-4">
-                <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
-                  <div className="bg-slate-50 rounded-2xl p-4 border border-slate-200">
-                    <p className="text-xs text-slate-500 font-bold uppercase">Today's Revenue</p>
-                    <p className="text-xl sm:text-2xl font-black text-emerald-700 mt-1">18,450 ETB</p>
-                  </div>
-                  <div className="bg-slate-50 rounded-2xl p-4 border border-slate-200">
-                    <p className="text-xs text-slate-500 font-bold uppercase">Orders Today</p>
-                    <p className="text-xl sm:text-2xl font-black text-slate-900 mt-1">42 Sales</p>
-                  </div>
-                  <div className="bg-slate-50 rounded-2xl p-4 border border-slate-200">
-                    <p className="text-xs text-slate-500 font-bold uppercase">Catalog Stocked</p>
-                    <p className="text-xl sm:text-2xl font-black text-slate-900 mt-1">98.4%</p>
-                  </div>
-                  <div className="bg-slate-50 rounded-2xl p-4 border border-slate-200">
-                    <p className="text-xs text-slate-500 font-bold uppercase">Low Stock Alert</p>
-                    <p className="text-xl sm:text-2xl font-black text-amber-700 mt-1">2 Items</p>
-                  </div>
-                </div>
-
-                <div className="rounded-2xl border border-slate-200 bg-slate-50 p-4">
-                  <div className="flex items-center justify-between text-xs text-slate-500 font-bold uppercase mb-2">
-                    <span>Recent Checkout</span>
-                    <span className="text-emerald-700">Stock Decremented Automatically</span>
-                  </div>
-                  <div className="flex items-center justify-between bg-white rounded-xl p-3 border border-slate-200 text-sm">
-                    <div>
-                      <span className="font-bold text-slate-900">Abebe Kebede</span>
-                      <span className="text-xs text-slate-500 block">Coca Cola 330ml (4) • Mineral Water 1L (2)</span>
-                    </div>
-                    <div className="text-right">
-                      <span className="font-black text-slate-900">220.00 ETB</span>
-                      <span className="text-xs text-slate-500 block font-medium">Paid via Telebirr</span>
-                    </div>
-                  </div>
-                </div>
+            <div className="rounded-2xl border border-slate-200/90 bg-white p-4 shadow-xs">
+              <div className="rounded-xl bg-blue-50 p-2.5 text-blue-600 w-fit mb-3">
+                <BadgeAlert className="h-5 w-5" />
               </div>
-            )}
+              <h4 className="text-xs font-black text-slate-900">Zero-Stock Alerts</h4>
+              <p className="text-[11px] text-slate-500 mt-1">Automatic 'EMPTY' status when items reach 0 stock</p>
+            </div>
 
-            {/* Tab 2: Admin Audit Preview */}
-            {activeTab === 'audit' && (
-              <div className="mt-6 space-y-3">
-                <div className="rounded-2xl border border-amber-300 bg-amber-50/40 p-4">
-                  <div className="flex items-start space-x-3">
-                    <div className="rounded-xl bg-amber-100 p-2 text-amber-700 mt-0.5">
-                      <AlertTriangle className="h-5 w-5" />
-                    </div>
-                    <div className="flex-1">
-                      <div className="flex items-center space-x-2">
-                        <span className="bg-amber-100 text-amber-900 font-bold text-[10px] px-2 py-0.5 rounded-full uppercase">
-                          Pending Admin Review
-                        </span>
-                        <span className="text-xs text-slate-500 font-medium">Delete Intercepted</span>
-                      </div>
-                      <p className="text-sm font-bold text-slate-900 mt-1">
-                        Employee Dawit requested permanent deletion of "Highland Mineral Water 1L".
-                      </p>
-                      <p className="text-xs text-slate-600 mt-1">
-                        The item remains safely active in the catalog. Only you as Administrator can authorize permanent removal.
-                      </p>
-                    </div>
-                  </div>
-                </div>
-
-                <div className="rounded-2xl border border-slate-200 bg-white p-4">
-                  <div className="flex items-start space-x-3">
-                    <div className="rounded-xl bg-blue-50 p-2 text-blue-700 mt-0.5">
-                      <DollarSign className="h-5 w-5" />
-                    </div>
-                    <div className="flex-1">
-                      <span className="bg-blue-100 text-blue-900 font-bold text-[10px] px-2 py-0.5 rounded-full uppercase">
-                        Price Audit Log
-                      </span>
-                      <p className="text-sm font-bold text-slate-900 mt-1">
-                        Employee Hana modified price of "Sunflower Oil 1L" from 250.00 ETB to 260.00 ETB.
-                      </p>
-                      <p className="text-xs text-slate-500 mt-0.5">
-                        Logged on Today at 02:14 PM with staff ID #04.
-                      </p>
-                    </div>
-                  </div>
-                </div>
+            <div className="rounded-2xl border border-slate-200/90 bg-white p-4 shadow-xs">
+              <div className="rounded-xl bg-purple-50 p-2.5 text-purple-600 w-fit mb-3">
+                <Users className="h-5 w-5" />
               </div>
-            )}
+              <h4 className="text-xs font-black text-slate-900">Staff Hierarchy</h4>
+              <p className="text-[11px] text-slate-500 mt-1">Admin oversight, Co-Manager delegation & Cashier roles</p>
+            </div>
+
+            <div className="rounded-2xl border border-slate-200/90 bg-white p-4 shadow-xs">
+              <div className="rounded-xl bg-amber-50 p-2.5 text-amber-600 w-fit mb-3">
+                <TrendingUp className="h-5 w-5" />
+              </div>
+              <h4 className="text-xs font-black text-slate-900">Daily Reconciliation</h4>
+              <p className="text-[11px] text-slate-500 mt-1">End-of-day revenue, sold quantity & remaining stock</p>
+            </div>
           </div>
         </div>
       </section>
 
-      {/* Bento Grid Feature Section */}
-      <section className="py-20 border-t border-slate-200 bg-white px-6">
+      {/* ========================================================================= */}
+      {/* SECTION: SYSTEM CAPABILITIES & FEATURES */}
+      {/* ========================================================================= */}
+      <section id="features" className="py-16 px-4 sm:px-6 max-w-7xl mx-auto">
+        <div className="text-center max-w-2xl mx-auto mb-12">
+          <span className="text-xs font-black uppercase tracking-wider text-emerald-700 block">
+            Core Architecture
+          </span>
+          <h2 className="text-2xl sm:text-3xl font-black text-slate-900 tracking-tight mt-1">
+            Engineered for Precision & Accountability
+          </h2>
+          <p className="text-xs sm:text-sm text-slate-500 mt-2">
+            Every transaction, price update, and stock movement is verified and audited across your business hierarchy.
+          </p>
+        </div>
+
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+          <div className="rounded-2xl border border-slate-200/90 bg-white p-6 shadow-xs hover:border-emerald-300 transition">
+            <div className="h-11 w-11 rounded-xl bg-emerald-100 text-emerald-700 flex items-center justify-center font-bold mb-4">
+              <Receipt className="h-5 w-5" />
+            </div>
+            <h3 className="text-base font-bold text-slate-900">Point of Sale Cashier Terminal</h3>
+            <p className="text-xs text-slate-600 mt-2 leading-relaxed">
+              Fast, intuitive cashier sales screen with instant search, quantity adjustment, customer loyalty attachment, and receipt generation. Reduces checkout bottlenecks while deducting inventory instantly.
+            </p>
+          </div>
+
+          <div className="rounded-2xl border border-slate-200/90 bg-white p-6 shadow-xs hover:border-blue-300 transition">
+            <div className="h-11 w-11 rounded-xl bg-blue-100 text-blue-700 flex items-center justify-center font-bold mb-4">
+              <Package className="h-5 w-5" />
+            </div>
+            <h3 className="text-base font-bold text-slate-900">Verified Catalog & Stock Control</h3>
+            <p className="text-xs text-slate-600 mt-2 leading-relaxed">
+              Structured category organization, cost-to-retail profit margin tracking, and automated inventory labeling: items with 0 stock are immediately marked <strong>EMPTY</strong> to prevent overselling.
+            </p>
+          </div>
+
+          <div className="rounded-2xl border border-slate-200/90 bg-white p-6 shadow-xs hover:border-purple-300 transition">
+            <div className="h-11 w-11 rounded-xl bg-purple-100 text-purple-700 flex items-center justify-center font-bold mb-4">
+              <Users className="h-5 w-5" />
+            </div>
+            <h3 className="text-base font-bold text-slate-900">Managerial Delegation & Approvals</h3>
+            <p className="text-xs text-slate-600 mt-2 leading-relaxed">
+              Co-Managers can add products and manage operational flow. All co-manager modifications automatically trigger alerts for the Store Owner, and employee price/product changes require authorization before going live.
+            </p>
+          </div>
+
+          <div className="rounded-2xl border border-slate-200/90 bg-white p-6 shadow-xs hover:border-amber-300 transition">
+            <div className="h-11 w-11 rounded-xl bg-amber-100 text-amber-700 flex items-center justify-center font-bold mb-4">
+              <TrendingUp className="h-5 w-5" />
+            </div>
+            <h3 className="text-base font-bold text-slate-900">Automated Daily Reconciliation</h3>
+            <p className="text-xs text-slate-600 mt-2 leading-relaxed">
+              Comprehensive daily reports accessible on the admin dashboard calculating total sales revenue, units sold, remaining stock count, gross margins, and payment method breakdowns.
+            </p>
+          </div>
+
+          <div className="rounded-2xl border border-slate-200/90 bg-white p-6 shadow-xs hover:border-rose-300 transition">
+            <div className="h-11 w-11 rounded-xl bg-rose-100 text-rose-700 flex items-center justify-center font-bold mb-4">
+              <ShieldCheck className="h-5 w-5" />
+            </div>
+            <h3 className="text-base font-bold text-slate-900">Audit Logs & Notification Bell</h3>
+            <p className="text-xs text-slate-600 mt-2 leading-relaxed">
+              The admin header notification center keeps store owners in full sync. Filter notifications by Co-Manager activity, view detailed audit logs, and delete archived logs when needed.
+            </p>
+          </div>
+
+          <div className="rounded-2xl border border-slate-200/90 bg-white p-6 shadow-xs hover:border-teal-300 transition">
+            <div className="h-11 w-11 rounded-xl bg-teal-100 text-teal-700 flex items-center justify-center font-bold mb-4">
+              <Coins className="h-5 w-5" />
+            </div>
+            <h3 className="text-base font-bold text-slate-900">Multi-Currency & Business Settings</h3>
+            <p className="text-xs text-slate-600 mt-2 leading-relaxed">
+              Admin-exclusive business profile controls. Configure Ethiopian Birr (ETB) by default or select from common international currencies (USD, EUR, GBP), tax rates, and store contact info.
+            </p>
+          </div>
+        </div>
+      </section>
+
+      {/* ========================================================================= */}
+      {/* SECTION: 3-TIER ROLE HIERARCHY */}
+      {/* ========================================================================= */}
+      <section id="hierarchy" className="py-16 bg-white border-y border-slate-200 px-4 sm:px-6">
         <div className="max-w-6xl mx-auto">
-          <div className="text-center mb-16">
-            <span className="text-xs font-bold uppercase tracking-wider text-emerald-800 bg-emerald-50 border border-emerald-200 px-3.5 py-1.5 rounded-full">
-              Enterprise Control, Everyday Simplicity
+          <div className="text-center max-w-2xl mx-auto mb-12">
+            <span className="text-xs font-black uppercase tracking-wider text-emerald-700 block">
+              Staff Roles & Permissions
             </span>
-            <h2 className="mt-4 text-3xl sm:text-4xl font-black text-slate-900">
-              Engineered for complete retail oversight
+            <h2 className="text-2xl sm:text-3xl font-black text-slate-900 tracking-tight mt-1">
+              Balanced Governance for Store Teams
             </h2>
-            <p className="mt-3 text-base text-slate-600 max-w-2xl mx-auto">
-              Equip your staff with fast point of sale while keeping ownership authority firmly in your hands.
+            <p className="text-xs sm:text-sm text-slate-500 mt-2">
+              Every staff member operates inside an optimized role with explicit responsibilities and verification safety nets.
             </p>
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-            {/* Bento Card 1 */}
-            <div className="rounded-3xl border border-slate-200 bg-slate-50 p-8 shadow-sm hover:shadow-md transition">
-              <div className="h-12 w-12 rounded-2xl bg-emerald-100 text-emerald-700 flex items-center justify-center font-bold mb-6">
-                <ShoppingCart className="h-6 w-6" />
+            {/* Admin Card */}
+            <div className="rounded-2xl border-2 border-emerald-500 bg-emerald-50/20 p-6 flex flex-col justify-between shadow-xs">
+              <div>
+                <div className="flex items-center justify-between mb-4">
+                  <span className="rounded-full bg-emerald-100 text-emerald-800 border border-emerald-300 px-2.5 py-0.5 text-[11px] font-black uppercase">
+                    Highest Authority
+                  </span>
+                  <ShieldCheck className="h-6 w-6 text-emerald-600" />
+                </div>
+                <h3 className="text-lg font-black text-slate-900">Store Administrator</h3>
+                <p className="text-xs text-slate-600 mt-1">Store Owner & Executive Manager</p>
+
+                <ul className="mt-5 space-y-2.5 text-xs text-slate-700">
+                  <li className="flex items-start">
+                    <Check className="h-4 w-4 text-emerald-600 mr-2 shrink-0 mt-0.5" />
+                    <span>Full business profile & multi-currency selection</span>
+                  </li>
+                  <li className="flex items-start">
+                    <Check className="h-4 w-4 text-emerald-600 mr-2 shrink-0 mt-0.5" />
+                    <span>Real-time notification bell for co-manager actions</span>
+                  </li>
+                  <li className="flex items-start">
+                    <Check className="h-4 w-4 text-emerald-600 mr-2 shrink-0 mt-0.5" />
+                    <span>Activity audit logs with report deletion capability</span>
+                  </li>
+                  <li className="flex items-start">
+                    <Check className="h-4 w-4 text-emerald-600 mr-2 shrink-0 mt-0.5" />
+                    <span>End-of-day financial reconciliation reports</span>
+                  </li>
+                  <li className="flex items-start">
+                    <Check className="h-4 w-4 text-emerald-600 mr-2 shrink-0 mt-0.5" />
+                    <span>Final approval for deletion & profile update requests</span>
+                  </li>
+                </ul>
               </div>
-              <h3 className="text-xl font-bold text-slate-900">Atomic Point of Sale</h3>
-              <p className="mt-3 text-sm text-slate-600 leading-relaxed">
-                Ring up sales in Ethiopian Birr with instant stock verification. The system automatically rejects checkouts that exceed available inventory, eliminating inventory mismatch.
-              </p>
+
+              <div className="mt-6 pt-4 border-t border-emerald-200/70">
+                <span className="text-[11px] text-emerald-800 font-bold block">
+                  Access: Full Store Dashboard & Admin Console
+                </span>
+              </div>
             </div>
 
-            {/* Bento Card 2 */}
-            <div className="rounded-3xl border border-slate-200 bg-slate-50 p-8 shadow-sm hover:shadow-md transition">
-              <div className="h-12 w-12 rounded-2xl bg-red-100 text-red-700 flex items-center justify-center font-bold mb-6">
-                <Lock className="h-6 w-6" />
+            {/* Co-Manager Card */}
+            <div className="rounded-2xl border border-slate-200 bg-white p-6 flex flex-col justify-between shadow-xs">
+              <div>
+                <div className="flex items-center justify-between mb-4">
+                  <span className="rounded-full bg-blue-100 text-blue-800 border border-blue-300 px-2.5 py-0.5 text-[11px] font-black uppercase">
+                    Operational Lead
+                  </span>
+                  <Users className="h-6 w-6 text-blue-600" />
+                </div>
+                <h3 className="text-lg font-black text-slate-900">Co-Manager</h3>
+                <p className="text-xs text-slate-600 mt-1">Floor Supervisor & Shift Manager</p>
+
+                <ul className="mt-5 space-y-2.5 text-xs text-slate-700">
+                  <li className="flex items-start">
+                    <Check className="h-4 w-4 text-blue-600 mr-2 shrink-0 mt-0.5" />
+                    <span>Add products, set pricing & register customers directly</span>
+                  </li>
+                  <li className="flex items-start">
+                    <Check className="h-4 w-4 text-blue-600 mr-2 shrink-0 mt-0.5" />
+                    <span>All actions logged & notified to admin automatically</span>
+                  </li>
+                  <li className="flex items-start">
+                    <Check className="h-4 w-4 text-blue-600 mr-2 shrink-0 mt-0.5" />
+                    <span>Can approve cashier/employee catalog modifications</span>
+                  </li>
+                  <li className="flex items-start">
+                    <Check className="h-4 w-4 text-blue-600 mr-2 shrink-0 mt-0.5" />
+                    <span>Deletions & personal profile updates require admin review</span>
+                  </li>
+                </ul>
               </div>
-              <h3 className="text-xl font-bold text-slate-900">Admin-Only Deletions</h3>
-              <p className="mt-3 text-sm text-slate-600 leading-relaxed">
-                Employees can record sales and add products, but cannot permanently delete any catalog or customer data. Any employee deletion attempt is routed to the Admin Center for your review.
-              </p>
+
+              <div className="mt-6 pt-4 border-t border-slate-100">
+                <span className="text-[11px] text-blue-700 font-bold block">
+                  Access: Catalog, Sales, Approvals & Personal Profile
+                </span>
+              </div>
             </div>
 
-            {/* Bento Card 3 */}
-            <div className="rounded-3xl border border-slate-200 bg-slate-50 p-8 shadow-sm hover:shadow-md transition">
-              <div className="h-12 w-12 rounded-2xl bg-amber-100 text-amber-700 flex items-center justify-center font-bold mb-6">
-                <DollarSign className="h-6 w-6" />
-              </div>
-              <h3 className="text-xl font-bold text-slate-900">Price Change Auditing</h3>
-              <p className="mt-3 text-sm text-slate-600 leading-relaxed">
-                Prevent rogue price modifications. Whenever staff updates a price, the system logs the employee name, old price, new price, and timestamp in your permanent audit history.
-              </p>
-            </div>
+            {/* Cashier / Employee Card */}
+            <div className="rounded-2xl border border-slate-200 bg-white p-6 flex flex-col justify-between shadow-xs">
+              <div>
+                <div className="flex items-center justify-between mb-4">
+                  <span className="rounded-full bg-slate-100 text-slate-800 border border-slate-300 px-2.5 py-0.5 text-[11px] font-black uppercase">
+                    Frontline Staff
+                  </span>
+                  <Receipt className="h-6 w-6 text-slate-600" />
+                </div>
+                <h3 className="text-lg font-black text-slate-900">Employee / Cashier</h3>
+                <p className="text-xs text-slate-600 mt-1">POS Sales Execution & Customer Service</p>
 
-            {/* Bento Card 4 */}
-            <div className="rounded-3xl border border-slate-200 bg-slate-50 p-8 shadow-sm hover:shadow-md transition md:col-span-2">
-              <div className="h-12 w-12 rounded-2xl bg-blue-100 text-blue-700 flex items-center justify-center font-bold mb-6">
-                <TrendingUp className="h-6 w-6" />
+                <ul className="mt-5 space-y-2.5 text-xs text-slate-700">
+                  <li className="flex items-start">
+                    <Check className="h-4 w-4 text-slate-600 mr-2 shrink-0 mt-0.5" />
+                    <span>High-speed POS sales terminal operation</span>
+                  </li>
+                  <li className="flex items-start">
+                    <Check className="h-4 w-4 text-slate-600 mr-2 shrink-0 mt-0.5" />
+                    <span>Customer lookup and registration at checkout</span>
+                  </li>
+                  <li className="flex items-start">
+                    <Check className="h-4 w-4 text-slate-600 mr-2 shrink-0 mt-0.5" />
+                    <span>Product and price change requests held for approval</span>
+                  </li>
+                  <li className="flex items-start">
+                    <Check className="h-4 w-4 text-slate-600 mr-2 shrink-0 mt-0.5" />
+                    <span>Personal profile edit requires manager approval</span>
+                  </li>
+                </ul>
               </div>
-              <h3 className="text-xl font-bold text-slate-900">Automated Daily Revenue & Inventory Alerts</h3>
-              <p className="mt-3 text-sm text-slate-600 leading-relaxed">
-                No more paper calculations at closing time. The visual dashboard calculates revenue in real time, plots daily sales trends, and highlights low-stock products before you run out.
-              </p>
-            </div>
 
-            {/* Bento Card 5 */}
-            <div className="rounded-3xl border border-slate-200 bg-slate-50 p-8 shadow-sm hover:shadow-md transition">
-              <div className="h-12 w-12 rounded-2xl bg-purple-100 text-purple-700 flex items-center justify-center font-bold mb-6">
-                <Users className="h-6 w-6" />
+              <div className="mt-6 pt-4 border-t border-slate-100">
+                <span className="text-[11px] text-slate-600 font-bold block">
+                  Access: POS Station, Customer Roster & Assigned Workspace
+                </span>
               </div>
-              <h3 className="text-xl font-bold text-slate-900">Customer Ledgers</h3>
-              <p className="mt-3 text-sm text-slate-600 leading-relaxed">
-                Track phone numbers, delivery addresses, and cumulative lifetime purchase history for your repeat buyers in one centralized directory.
-              </p>
             </div>
           </div>
         </div>
       </section>
 
-      {/* Comparison: Why Upgrade From Notebooks & Excel */}
-      <section className="py-20 border-t border-slate-200 bg-slate-50 px-6">
-        <div className="max-w-4xl mx-auto">
-          <div className="text-center mb-14">
-            <h2 className="text-xs font-bold uppercase tracking-wider text-emerald-800">Direct Comparison</h2>
-            <h3 className="mt-2 text-3xl font-black text-slate-900">
-              Why leading retail shops leave paper and spreadsheets behind
-            </h3>
+      {/* ========================================================================= */}
+      {/* SECTION: DAILY RECONCILIATION HIGHLIGHT */}
+      {/* ========================================================================= */}
+      <section id="reports" className="py-16 px-4 sm:px-6 max-w-7xl mx-auto">
+        <div className="rounded-3xl bg-slate-900 text-white p-8 sm:p-12 shadow-xl border border-slate-800">
+          <div className="max-w-3xl">
+            <span className="rounded-full bg-emerald-500/20 text-emerald-400 border border-emerald-500/30 px-3 py-1 text-xs font-bold uppercase tracking-wider inline-block mb-3">
+              Automated Financial Intelligence
+            </span>
+            <h2 className="text-2xl sm:text-4xl font-black tracking-tight text-white leading-tight">
+              Daily Operations & Sales Reconciliation
+            </h2>
+            <p className="mt-3 text-sm text-slate-300 leading-relaxed">
+              Every day at closing, administrators and managers get clear, actionable numbers without manual tallying or spreadsheet errors:
+            </p>
           </div>
 
-          <div className="rounded-3xl border border-slate-200 bg-white shadow-sm overflow-hidden">
-            <table className="w-full text-left text-sm">
-              <thead className="bg-slate-100/70 border-b border-slate-200 text-xs font-bold uppercase text-slate-600">
-                <tr>
-                  <th className="p-4 sm:p-5">Capability</th>
-                  <th className="p-4 sm:p-5 text-slate-500">Notebooks & Excel</th>
-                  <th className="p-4 sm:p-5 text-emerald-700 font-black">Business Management System</th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-slate-100 text-slate-700 font-medium">
-                <tr>
-                  <td className="p-4 sm:p-5 font-bold text-slate-900">Live Stock Decrement</td>
-                  <td className="p-4 sm:p-5 text-red-600 flex items-center">
-                    <X className="h-4 w-4 mr-1.5 flex-shrink-0" /> Manual counting
-                  </td>
-                  <td className="p-4 sm:p-5 text-emerald-700 font-bold">
-                    <span className="flex items-center"><Check className="h-4 w-4 mr-1.5 flex-shrink-0" /> Instant on every sale</span>
-                  </td>
-                </tr>
-                <tr>
-                  <td className="p-4 sm:p-5 font-bold text-slate-900">Employee Theft & Accidental Delete</td>
-                  <td className="p-4 sm:p-5 text-red-600 flex items-center">
-                    <X className="h-4 w-4 mr-1.5 flex-shrink-0" /> Zero protection
-                  </td>
-                  <td className="p-4 sm:p-5 text-emerald-700 font-bold">
-                    <span className="flex items-center"><Check className="h-4 w-4 mr-1.5 flex-shrink-0" /> Protected (Admin authorization only)</span>
-                  </td>
-                </tr>
-                <tr>
-                  <td className="p-4 sm:p-5 font-bold text-slate-900">Price Override Auditing</td>
-                  <td className="p-4 sm:p-5 text-red-600 flex items-center">
-                    <X className="h-4 w-4 mr-1.5 flex-shrink-0" /> Untracked
-                  </td>
-                  <td className="p-4 sm:p-5 text-emerald-700 font-bold">
-                    <span className="flex items-center"><Check className="h-4 w-4 mr-1.5 flex-shrink-0" /> Full audit history logged</span>
-                  </td>
-                </tr>
-                <tr>
-                  <td className="p-4 sm:p-5 font-bold text-slate-900">Daily Revenue Calculation</td>
-                  <td className="p-4 sm:p-5 text-slate-500">
-                    Hours spent with calculator
-                  </td>
-                  <td className="p-4 sm:p-5 text-emerald-700 font-bold">
-                    <span className="flex items-center"><Check className="h-4 w-4 mr-1.5 flex-shrink-0" /> Real-time automatic dashboard</span>
-                  </td>
-                </tr>
-              </tbody>
-            </table>
+          <div className="mt-8 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+            <div className="rounded-2xl bg-slate-800/80 border border-slate-700 p-4">
+              <span className="text-[11px] text-slate-400 uppercase font-bold block">Gross Daily Sales</span>
+              <p className="text-xl font-black text-emerald-400 mt-1">Exact Revenue</p>
+              <p className="text-[11px] text-slate-400 mt-1">Calculated from verified POS orders</p>
+            </div>
+
+            <div className="rounded-2xl bg-slate-800/80 border border-slate-700 p-4">
+              <span className="text-[11px] text-slate-400 uppercase font-bold block">Sales Volume</span>
+              <p className="text-xl font-black text-white mt-1">Units Sold</p>
+              <p className="text-[11px] text-slate-400 mt-1">Quantities deducted per product category</p>
+            </div>
+
+            <div className="rounded-2xl bg-slate-800/80 border border-slate-700 p-4">
+              <span className="text-[11px] text-slate-400 uppercase font-bold block">Inventory Status</span>
+              <p className="text-xl font-black text-amber-400 mt-1">Remaining Stock</p>
+              <p className="text-[11px] text-slate-400 mt-1">Automated alert on empty items</p>
+            </div>
+
+            <div className="rounded-2xl bg-slate-800/80 border border-slate-700 p-4">
+              <span className="text-[11px] text-slate-400 uppercase font-bold block">Payment Breakdown</span>
+              <p className="text-xl font-black text-blue-400 mt-1">Cash / Card / Mobile</p>
+              <p className="text-[11px] text-slate-400 mt-1">Reconciliation by payment method</p>
+            </div>
           </div>
         </div>
       </section>
 
-      {/* 3-Step Setup */}
-      <section className="py-20 border-t border-slate-200 bg-white px-6">
+      {/* ========================================================================= */}
+      {/* CALL TO ACTION */}
+      {/* ========================================================================= */}
+      <section className="py-16 bg-white border-t border-slate-200 px-4 sm:px-6">
         <div className="max-w-4xl mx-auto text-center">
-          <h2 className="text-xs font-bold uppercase tracking-wider text-emerald-800">Simple Onboarding</h2>
-          <h3 className="mt-2 text-3xl font-black text-slate-900">
-            Up and running in 3 simple steps
-          </h3>
-
-          <div className="grid sm:grid-cols-3 gap-8 mt-12 text-left">
-            <div className="rounded-2xl border border-slate-200 bg-slate-50 p-6">
-              <span className="h-8 w-8 rounded-full bg-emerald-600 text-white font-bold flex items-center justify-center text-sm mb-4">
-                1
-              </span>
-              <h4 className="font-bold text-slate-900 text-base">Register Your Store</h4>
-              <p className="mt-2 text-xs text-slate-600 leading-relaxed">
-                Provide your store name, address, and set up your master administrator account in seconds.
-              </p>
-            </div>
-
-            <div className="rounded-2xl border border-slate-200 bg-slate-50 p-6">
-              <span className="h-8 w-8 rounded-full bg-emerald-600 text-white font-bold flex items-center justify-center text-sm mb-4">
-                2
-              </span>
-              <h4 className="font-bold text-slate-900 text-base">Add Inventory & Staff</h4>
-              <p className="mt-2 text-xs text-slate-600 leading-relaxed">
-                Enter your products with prices in ETB and invite hired employees with protected staff permissions.
-              </p>
-            </div>
-
-            <div className="rounded-2xl border border-slate-200 bg-slate-50 p-6">
-              <span className="h-8 w-8 rounded-full bg-emerald-600 text-white font-bold flex items-center justify-center text-sm mb-4">
-                3
-              </span>
-              <h4 className="font-bold text-slate-900 text-base">Sell with Confidence</h4>
-              <p className="mt-2 text-xs text-slate-600 leading-relaxed">
-                Ring up sales via cash or mobile payments (Telebirr/CBE). Stock and revenue update automatically.
-              </p>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      {/* CTA Light Banner */}
-      <section className="py-20 border-t border-slate-200 bg-gradient-to-b from-slate-50 via-emerald-50/40 to-white text-slate-900 px-6 text-center">
-        <div className="max-w-3xl mx-auto">
-          <div className="inline-flex items-center space-x-2 rounded-full border border-emerald-200 bg-emerald-50 px-4 py-1.5 text-xs font-bold text-emerald-800 mb-6 shadow-sm">
-            <Sparkles className="h-4 w-4 text-emerald-600" />
-            <span>Ready for Immediate Deployment</span>
-          </div>
-          <h2 className="text-3xl sm:text-4xl font-black text-slate-900 tracking-tight">
-            Ready to modernize your retail store?
+          <h2 className="text-3xl font-black text-slate-900 tracking-tight">
+            Ready to Manage Your Retail Store?
           </h2>
-          <p className="mt-4 text-base sm:text-lg text-slate-600 leading-relaxed font-normal">
-            Create your master administrator account in seconds. Manage inventory, ring up sales, and protect your store with full staff oversight.
+          <p className="mt-3 text-sm text-slate-600 max-w-xl mx-auto leading-relaxed">
+            Sign in with your staff username to access the register, catalog manager, approval requests, and financial reports.
           </p>
-          <div className="mt-8 flex flex-col sm:flex-row items-center justify-center gap-4">
-            <Link
-              href="/register"
-              className="w-full sm:w-auto inline-flex items-center justify-center rounded-xl bg-emerald-600 px-8 py-4 text-base font-bold text-white shadow-xl shadow-emerald-600/25 hover:bg-emerald-500 hover:scale-[1.01] transition"
-            >
-              Register Your Business Now
-              <ArrowRight className="ml-2 h-5 w-5" />
-            </Link>
+
+          <div className="mt-6 flex flex-wrap items-center justify-center gap-3">
             <Link
               href="/login"
-              className="w-full sm:w-auto inline-flex items-center justify-center rounded-xl border border-slate-300 bg-white px-8 py-4 text-base font-bold text-slate-700 shadow-sm hover:bg-slate-50 transition"
+              className="inline-flex items-center justify-center rounded-xl bg-emerald-600 px-6 py-3 text-xs font-bold text-white shadow-md shadow-emerald-600/20 hover:bg-emerald-500 transition"
             >
-              Sign In to Existing Account
+              Sign In to Staff Portal
+              <ArrowRight className="ml-1.5 h-3.5 w-3.5" />
             </Link>
+
+            {!user && (
+              <Link
+                href="/register"
+                className="inline-flex items-center justify-center rounded-xl border border-slate-300 bg-white px-6 py-3 text-xs font-bold text-slate-700 hover:bg-slate-50 transition shadow-xs"
+              >
+                Register Business Account
+              </Link>
+            )}
           </div>
         </div>
       </section>
 
-      {/* Light Footer */}
-      <footer className="border-t border-slate-200 py-10 px-6 bg-white text-slate-600">
-        <div className="max-w-7xl mx-auto flex flex-col sm:flex-row items-center justify-between gap-6">
+      {/* Footer */}
+      <footer className="bg-slate-900 text-white border-t border-slate-800 py-12 px-4 sm:px-6">
+        <div className="max-w-6xl mx-auto flex flex-col md:flex-row items-center justify-between gap-6 text-xs text-slate-400">
           <div className="flex items-center space-x-3">
-            <div className="h-8 w-8 rounded-xl bg-emerald-600 flex items-center justify-center text-white shadow-sm">
-              <Store className="h-4 w-4" />
+            <div className="h-9 w-9 rounded-xl bg-emerald-600 flex items-center justify-center text-white font-bold">
+              <Store className="h-5 w-5" />
             </div>
-            <span className="font-extrabold text-slate-900 text-sm">
-              Business Management System
-            </span>
+            <div>
+              <span className="font-bold text-white block text-sm">{storeName}</span>
+              <span>Retail ERP, POS & Business Operations Platform</span>
+            </div>
           </div>
-          <div className="flex items-center space-x-6 text-xs font-semibold text-slate-600">
-            <Link href="/register" className="hover:text-emerald-700 transition">Register</Link>
-            <Link href="/login" className="hover:text-emerald-700 transition">Sign In</Link>
-            <Link href="/admin" className="hover:text-emerald-700 transition">Admin Portal</Link>
+
+          <div className="flex flex-wrap items-center gap-6">
+            <a href="#features" className="hover:text-white transition">Features</a>
+            <a href="#hierarchy" className="hover:text-white transition">Staff Hierarchy</a>
+            <a href="#reports" className="hover:text-white transition">Daily Reports</a>
+            <Link href="/shop" className="hover:text-white transition text-emerald-400 font-bold">Online Store</Link>
+            <Link href="/login" className="hover:text-white transition">Staff Sign In</Link>
+            <Link href="/register" className="hover:text-white transition">Register Store</Link>
+
           </div>
-          <p className="text-xs text-slate-500">
-            © 2026 Retail Management System. Enterprise RBAC & POS Platform.
-          </p>
+
+          <div>
+            <span>© {new Date().getFullYear()} {storeName}. All rights reserved.</span>
+          </div>
         </div>
       </footer>
     </div>
