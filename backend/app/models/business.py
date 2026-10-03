@@ -12,6 +12,8 @@ class Business(Base):
     phone = Column(String(50), nullable=True)
     email = Column(String(255), nullable=True)
     address = Column(String(255), nullable=True)
+    currency = Column(String(10), default="ETB", nullable=False)
+    currency_symbol = Column(String(10), default="Br", nullable=False)
     created_at = Column(DateTime, default=lambda: datetime.now(timezone.utc))
     updated_at = Column(DateTime, default=lambda: datetime.now(timezone.utc), onupdate=lambda: datetime.now(timezone.utc))
 

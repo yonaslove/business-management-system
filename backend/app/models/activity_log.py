@@ -22,3 +22,7 @@ class ActivityLog(Base):
 
     business = relationship("Business", back_populates="activity_logs")
     user = relationship("User", back_populates="activity_logs")
+
+    @property
+    def user_role(self) -> str:
+        return self.user.role if self.user else "employee"
