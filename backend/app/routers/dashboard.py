@@ -121,7 +121,7 @@ def get_low_stock_products(
 
     result = []
     for p in products:
-        status_label = "OUT OF STOCK" if p.stock_quantity <= 0 else "LOW STOCK"
+        status_label = "EMPTY" if p.stock_quantity <= 0 else "LOW STOCK"
         result.append({
             "id": p.id,
             "name": p.name,
