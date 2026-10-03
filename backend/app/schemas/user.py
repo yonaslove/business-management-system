@@ -9,6 +9,8 @@ class BusinessOut(BaseModel):
     phone: Optional[str] = None
     email: Optional[str] = None
     address: Optional[str] = None
+    currency: Optional[str] = "ETB"
+    currency_symbol: Optional[str] = "Br"
 
     model_config = ConfigDict(from_attributes=True)
 
@@ -16,6 +18,7 @@ class BusinessOut(BaseModel):
 class UserOut(BaseModel):
     id: int
     name: str
+    username: Optional[str] = None
     email: EmailStr
     role: str = "admin"
     business_id: int
@@ -23,3 +26,4 @@ class UserOut(BaseModel):
     created_at: datetime
 
     model_config = ConfigDict(from_attributes=True)
+

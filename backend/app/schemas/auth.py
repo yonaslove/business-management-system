@@ -3,17 +3,21 @@ from typing import Optional
 
 
 class LoginRequest(BaseModel):
-    email: EmailStr
+    username: Optional[str] = None
+    email: Optional[str] = None
     password: str
 
 
 class RegisterRequest(BaseModel):
     business_name: str
     owner_name: str
+    username: Optional[str] = None
     email: EmailStr
     password: str
     phone: Optional[str] = None
     address: Optional[str] = None
+    currency: Optional[str] = "ETB"
+    currency_symbol: Optional[str] = "Br"
 
 
 class Token(BaseModel):

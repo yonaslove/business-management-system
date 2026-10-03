@@ -5,35 +5,59 @@ import secrets
 from jose import jwt
 from app.core.config import settings
 
+import re
 # Salt for hashlib fallback hashing
 _HASH_SALT = "yonimarket-secure-salt-2026"
 
 
+def validate_password_strength(password: str) -> None:
+    """
+    Enforces strong password policy:
+    - Minimum 8 characters
+    - At least one uppercase letter (A-Z)
+    - At least one lowercase letter (a-z)
+    - At least one digit (0-9)
+    - At least one special symbol (!@#$%^&*...)
+    """
+    if not password or len(password) < 8:
+        raise ValueError("Password must be at least 8 characters long.")
+    if not re.search(r"[A-Z]", password):
+        raise ValueError("Password must contain at least one uppercase letter (A-Z).")
+    if not re.search(r"[a-z]", password):
+        raise ValueError("Password must contain at least one lowercase letter (a-z).")
+    if not re.search(r"\d", password):
+        raise ValueError("Password must contain at least one number (0-9).")
+    if not re.search(r"[!@#$%^&*(),.?\":{}|<>_\-+=\[\]\/\\~`']", password):
+        raise ValueError("Password must contain at least one special character (!@#$%^&*...).")
+
+
+
+def _hash_pbkdf2(password: str) -> str:
+    key = hashlib.pbkdf2_hmac(
+        'sha256',
+        password.encode('utf-8'),
+        _HASH_SALT.encode('utf-8'),
+        100000
+    )
+    return f"pbkdf2_sha256${key.hex()}"
+
+
 def verify_password(plain_password: str, hashed_password: str) -> bool:
+    if hashed_password.startswith("pbkdf2_sha256$"):
+        expected = _hash_pbkdf2(plain_password)
+        return secrets.compare_digest(expected, hashed_password)
     try:
         from passlib.context import CryptContext
         pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
         return pwd_context.verify(plain_password, hashed_password)
     except Exception:
-        # Fallback to PBKDF2 sha256 with salt
-        expected = get_password_hash(plain_password)
+        expected = _hash_pbkdf2(plain_password)
         return secrets.compare_digest(expected, hashed_password)
 
 
 def get_password_hash(password: str) -> str:
-    try:
-        from passlib.context import CryptContext
-        pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
-        return pwd_context.hash(password)
-    except Exception:
-        # Fallback to PBKDF2 sha256
-        key = hashlib.pbkdf2_hmac(
-            'sha256',
-            password.encode('utf-8'),
-            _HASH_SALT.encode('utf-8'),
-            100000
-        )
-        return f"pbkdf2_sha256${key.hex()}"
+    return _hash_pbkdf2(password)
+
 
 
 def create_access_token(subject: Union[str, Any], expires_delta: Optional[timedelta] = None) -> str:
