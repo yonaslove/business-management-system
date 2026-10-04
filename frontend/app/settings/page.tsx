@@ -13,7 +13,8 @@ import {
   LogOut,
   Info,
   Lock,
-  UserCheck
+  UserCheck,
+  CreditCard
 } from 'lucide-react';
 import { Sidebar } from '@/components/Sidebar';
 import { Header } from '@/components/Header';
@@ -44,7 +45,12 @@ export default function SettingsPage() {
     phone: '',
     address: '',
     currency: 'ETB',
-    currency_symbol: 'Br'
+    currency_symbol: 'Br',
+    payment_phone: '',
+    payment_account_name: '',
+    cbe_account: '',
+    other_bank_info: '',
+    payment_instructions: ''
   });
 
   // Personal Profile State (All users)
@@ -90,7 +96,12 @@ export default function SettingsPage() {
               phone: data.phone || '',
               address: data.address || '',
               currency: data.currency || 'ETB',
-              currency_symbol: data.currency_symbol || 'Br'
+              currency_symbol: data.currency_symbol || 'Br',
+              payment_phone: data.payment_phone || '',
+              payment_account_name: data.payment_account_name || '',
+              cbe_account: data.cbe_account || '',
+              other_bank_info: data.other_bank_info || '',
+              payment_instructions: data.payment_instructions || ''
             });
           } catch (err: any) {
             setBizError(err.message || 'Failed to load business settings.');
@@ -124,7 +135,12 @@ export default function SettingsPage() {
           phone: bizForm.phone.trim() || null,
           address: bizForm.address.trim() || null,
           currency: bizForm.currency,
-          currency_symbol: bizForm.currency_symbol
+          currency_symbol: bizForm.currency_symbol,
+          payment_phone: bizForm.payment_phone.trim() || null,
+          payment_account_name: bizForm.payment_account_name.trim() || null,
+          cbe_account: bizForm.cbe_account.trim() || null,
+          other_bank_info: bizForm.other_bank_info.trim() || null,
+          payment_instructions: bizForm.payment_instructions.trim() || null
         })
       });
 
@@ -336,6 +352,102 @@ export default function SettingsPage() {
                         onChange={(e) => setBizForm({ ...bizForm, address: e.target.value })}
                         className="mt-1 w-full rounded-xl border border-slate-200 px-3.5 py-2 text-sm text-slate-800 focus:border-emerald-500 focus:outline-none"
                       />
+                    </div>
+
+                    {/* Online Orders & Payment Accounts Section */}
+                    <div className="pt-4 border-t border-slate-100">
+                      <div className="flex items-center space-x-2.5 mb-3">
+                        <div className="h-8 w-8 rounded-xl bg-emerald-100 text-emerald-700 flex items-center justify-center font-bold">
+                          <CreditCard className="h-4 w-4" />
+                        </div>
+                        <div>
+                          <h4 className="text-xs font-black uppercase text-slate-900 tracking-wider">
+                            Online Orders & Payment Accounts (Telebirr & Banks)
+                          </h4>
+                          <p className="text-[11px] text-slate-500">
+                            These accounts are shown to customers on your shared storefront link so they know where to transfer money before uploading receipts.
+                          </p>
+                        </div>
+                      </div>
+
+                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                        <div>
+                          <label className="block text-xs font-bold uppercase text-slate-600">
+                            Telebirr Merchant / Phone Number
+                          </label>
+                          <input
+                            type="text"
+                            placeholder="e.g. 0911 22 33 44"
+                            value={bizForm.payment_phone}
+                            onChange={(e) => setBizForm({ ...bizForm, payment_phone: e.target.value })}
+                            className="mt-1 w-full rounded-xl border border-slate-200 px-3.5 py-2 text-sm text-slate-800 focus:border-emerald-500 focus:outline-none"
+                          />
+                          <p className="mt-1 text-[10px] text-slate-400">
+                            Shown to customers selecting Telebirr or CBE Birr
+                          </p>
+                        </div>
+
+                        <div>
+                          <label className="block text-xs font-bold uppercase text-slate-600">
+                            Payment Account Recipient Name
+                          </label>
+                          <input
+                            type="text"
+                            placeholder="e.g. Abebe Store / Abebe Kebede"
+                            value={bizForm.payment_account_name}
+                            onChange={(e) => setBizForm({ ...bizForm, payment_account_name: e.target.value })}
+                            className="mt-1 w-full rounded-xl border border-slate-200 px-3.5 py-2 text-sm text-slate-800 focus:border-emerald-500 focus:outline-none"
+                          />
+                          <p className="mt-1 text-[10px] text-slate-400">
+                            Name displayed to customers to verify account holder
+                          </p>
+                        </div>
+
+                        <div>
+                          <label className="block text-xs font-bold uppercase text-slate-600">
+                            CBE (Commercial Bank of Ethiopia) Account #
+                          </label>
+                          <input
+                            type="text"
+                            placeholder="e.g. 1000 1234 5678 9"
+                            value={bizForm.cbe_account}
+                            onChange={(e) => setBizForm({ ...bizForm, cbe_account: e.target.value })}
+                            className="mt-1 w-full rounded-xl border border-slate-200 px-3.5 py-2 text-sm text-slate-800 focus:border-emerald-500 focus:outline-none"
+                          />
+                          <p className="mt-1 text-[10px] text-slate-400">
+                            Shown for Bank Transfer & CBE Birr
+                          </p>
+                        </div>
+
+                        <div>
+                          <label className="block text-xs font-bold uppercase text-slate-600">
+                            Other Bank Information (Awash, Dashen, etc.)
+                          </label>
+                          <input
+                            type="text"
+                            placeholder="e.g. Awash: 01320..., Dashen: 12345..."
+                            value={bizForm.other_bank_info}
+                            onChange={(e) => setBizForm({ ...bizForm, other_bank_info: e.target.value })}
+                            className="mt-1 w-full rounded-xl border border-slate-200 px-3.5 py-2 text-sm text-slate-800 focus:border-emerald-500 focus:outline-none"
+                          />
+                          <p className="mt-1 text-[10px] text-slate-400">
+                            Optional additional banks and account numbers
+                          </p>
+                        </div>
+                      </div>
+
+                      <div className="mt-4">
+                        <label className="block text-xs font-bold uppercase text-slate-600">
+                          Payment Instructions for Customers
+                        </label>
+                        <textarea
+                          rows={2}
+                          placeholder="e.g. Please transfer the exact order amount, then copy the transaction reference number and attach your screenshot receipt below."
+                          value={bizForm.payment_instructions}
+                          onChange={(e) => setBizForm({ ...bizForm, payment_instructions: e.target.value })}
+                          className="mt-1 w-full rounded-xl border border-slate-200 px-3.5 py-2 text-sm text-slate-800 focus:border-emerald-500 focus:outline-none"
+                        />
+                      </div>
                     </div>
 
                     <div className="pt-3 border-t border-slate-100 flex items-center justify-between">

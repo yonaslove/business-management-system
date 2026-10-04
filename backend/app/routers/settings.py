@@ -42,6 +42,11 @@ def build_settings_out(biz: Business) -> dict:
         "address": biz.address,
         "currency": biz.currency or "ETB",
         "currency_symbol": biz.currency_symbol or "Br",
+        "payment_phone": getattr(biz, "payment_phone", None),
+        "payment_account_name": getattr(biz, "payment_account_name", None),
+        "cbe_account": getattr(biz, "cbe_account", None),
+        "other_bank_info": getattr(biz, "other_bank_info", None),
+        "payment_instructions": getattr(biz, "payment_instructions", None),
         "available_currencies": SUPPORTED_CURRENCIES
     }
 
@@ -99,6 +104,16 @@ def update_settings(
             if update_in.currency_symbol
             else CURRENCY_SYMBOL_MAP.get(cur_code, "Br")
         )
+    if update_in.payment_phone is not None:
+        payload_dict["payment_phone"] = update_in.payment_phone.strip() if update_in.payment_phone else None
+    if update_in.payment_account_name is not None:
+        payload_dict["payment_account_name"] = update_in.payment_account_name.strip() if update_in.payment_account_name else None
+    if update_in.cbe_account is not None:
+        payload_dict["cbe_account"] = update_in.cbe_account.strip() if update_in.cbe_account else None
+    if update_in.other_bank_info is not None:
+        payload_dict["other_bank_info"] = update_in.other_bank_info.strip() if update_in.other_bank_info else None
+    if update_in.payment_instructions is not None:
+        payload_dict["payment_instructions"] = update_in.payment_instructions.strip() if update_in.payment_instructions else None
 
     if not payload_dict:
         return SettingsResponse(
@@ -119,6 +134,16 @@ def update_settings(
     if "currency" in payload_dict:
         biz.currency = payload_dict["currency"]
         biz.currency_symbol = payload_dict["currency_symbol"]
+    if "payment_phone" in payload_dict:
+        biz.payment_phone = payload_dict["payment_phone"]
+    if "payment_account_name" in payload_dict:
+        biz.payment_account_name = payload_dict["payment_account_name"]
+    if "cbe_account" in payload_dict:
+        biz.cbe_account = payload_dict["cbe_account"]
+    if "other_bank_info" in payload_dict:
+        biz.other_bank_info = payload_dict["other_bank_info"]
+    if "payment_instructions" in payload_dict:
+        biz.payment_instructions = payload_dict["payment_instructions"]
 
     log = ActivityLog(
         business_id=biz.id,
@@ -128,7 +153,7 @@ def update_settings(
         entity_type="business",
         entity_id=biz.id,
         entity_name=biz.name,
-        details=f"Administrator {current_user.name} updated business profile and store currency to {biz.currency} ({biz.currency_symbol}).",
+        details=f"Administrator {current_user.name} updated business profile, currency to {biz.currency}, and online payment accounts.",
         payload=json.dumps(payload_dict),
         status="LOGGED"
     )

@@ -18,6 +18,11 @@ export interface Business {
   address?: string;
   currency?: string;
   currency_symbol?: string;
+  payment_phone?: string;
+  payment_account_name?: string;
+  cbe_account?: string;
+  other_bank_info?: string;
+  payment_instructions?: string;
 }
 
 export interface Employee {
@@ -174,6 +179,11 @@ export interface BusinessSettings {
   address?: string | null;
   currency: string;
   currency_symbol: string;
+  payment_phone?: string | null;
+  payment_account_name?: string | null;
+  cbe_account?: string | null;
+  other_bank_info?: string | null;
+  payment_instructions?: string | null;
   available_currencies: CurrencyInfo[];
 }
 

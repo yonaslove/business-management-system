@@ -16,6 +16,14 @@ class BusinessSettingsOut(BaseModel):
     address: Optional[str] = None
     currency: str = "ETB"
     currency_symbol: str = "Br"
+
+    # Online Payment Accounts
+    payment_phone: Optional[str] = None
+    payment_account_name: Optional[str] = None
+    cbe_account: Optional[str] = None
+    other_bank_info: Optional[str] = None
+    payment_instructions: Optional[str] = None
+
     available_currencies: List[CurrencyInfo]
 
     model_config = ConfigDict(from_attributes=True)
@@ -28,6 +36,13 @@ class BusinessSettingsUpdate(BaseModel):
     address: Optional[str] = None
     currency: Optional[str] = None
     currency_symbol: Optional[str] = None
+
+    # Online Payment Accounts
+    payment_phone: Optional[str] = None
+    payment_account_name: Optional[str] = None
+    cbe_account: Optional[str] = None
+    other_bank_info: Optional[str] = None
+    payment_instructions: Optional[str] = None
 
 
 class SettingsResponse(BaseModel):

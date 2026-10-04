@@ -14,6 +14,14 @@ class Business(Base):
     address = Column(String(255), nullable=True)
     currency = Column(String(10), default="ETB", nullable=False)
     currency_symbol = Column(String(10), default="Br", nullable=False)
+
+    # Online Payment Accounts & Transfer Instructions
+    payment_phone = Column(String(50), nullable=True)  # Telebirr / Mobile Money Number
+    payment_account_name = Column(String(255), nullable=True)  # Recipient / Merchant Name
+    cbe_account = Column(String(100), nullable=True)  # Commercial Bank of Ethiopia (CBE) Account
+    other_bank_info = Column(String(255), nullable=True)  # Awash / Dashen / other bank details
+    payment_instructions = Column(String(500), nullable=True)  # Custom instruction note for customers
+
     created_at = Column(DateTime, default=lambda: datetime.now(timezone.utc))
     updated_at = Column(DateTime, default=lambda: datetime.now(timezone.utc), onupdate=lambda: datetime.now(timezone.utc))
 

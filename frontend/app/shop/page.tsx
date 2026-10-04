@@ -34,7 +34,10 @@ import {
   LogOut,
   History,
   CheckCheck,
-  ExternalLink
+  ExternalLink,
+  Copy,
+  Smartphone,
+  Building2
 } from 'lucide-react';
 import { apiRequest } from '@/lib/api';
 import { useAuth } from '@/lib/auth';
@@ -66,6 +69,11 @@ interface PublicStoreData {
     address?: string | null;
     currency: string;
     currency_symbol: string;
+    payment_phone?: string | null;
+    payment_account_name?: string | null;
+    cbe_account?: string | null;
+    other_bank_info?: string | null;
+    payment_instructions?: string | null;
   };
   categories: PublicCategory[];
   products: PublicProduct[];
@@ -143,6 +151,19 @@ function ShopContent() {
     fileSizeKb: number;
   } | null>(null);
   const [receiptError, setReceiptError] = useState<string | null>(null);
+
+  // Store Payment Accounts Modal & Quick Copy State
+  const [isPaymentAccountsOpen, setIsPaymentAccountsOpen] = useState(false);
+  const [copiedField, setCopiedField] = useState<string | null>(null);
+
+  const handleCopyText = (text: string, fieldId: string) => {
+    if (!text) return;
+    navigator.clipboard.writeText(text);
+    setCopiedField(fieldId);
+    setTimeout(() => {
+      setCopiedField(null);
+    }, 2000);
+  };
 
   // Load customer profile from storage on start
   useEffect(() => {
@@ -817,6 +838,17 @@ function ShopContent() {
           </Link>
 
           <div className="flex items-center space-x-2.5 sm:space-x-3">
+            {/* Store Payment Details Button */}
+            <button
+              onClick={() => setIsPaymentAccountsOpen(true)}
+              className="inline-flex items-center space-x-1.5 rounded-xl border border-emerald-200 bg-emerald-50/70 px-3 py-2 text-xs font-bold text-emerald-900 hover:bg-emerald-100 transition shadow-xs cursor-pointer"
+              title="View Telebirr and bank accounts for online transfer"
+            >
+              <CreditCard className="h-3.5 w-3.5 text-emerald-700" />
+              <span className="hidden sm:inline">Payment Accounts</span>
+              <span className="sm:hidden">Pay Info</span>
+            </button>
+
             {/* Customer Tracking / Orders Button */}
             <button
               onClick={() => {
@@ -1225,6 +1257,343 @@ function ShopContent() {
                           <option value="Cash on Delivery">Cash on Delivery</option>
                         </select>
                       </div>
+
+                      {/* Interactive Payment Destination Card */}
+                      {checkoutForm.payment_method === 'Telebirr' && (
+                        <div className="rounded-2xl border-2 border-emerald-500/40 bg-gradient-to-br from-emerald-50 via-teal-50/40 to-white p-3.5 space-y-2.5 shadow-xs animate-in fade-in duration-200">
+                          <div className="flex items-center justify-between">
+                            <span className="inline-flex items-center space-x-1.5 rounded-full bg-emerald-600 px-2.5 py-0.5 text-[10px] font-black uppercase tracking-wider text-white shadow-xs">
+                              <Smartphone className="h-3 w-3" />
+                              <span>Telebirr Transfer Details</span>
+                            </span>
+                            <span className="text-[10px] font-bold text-emerald-800">
+                              Instant Transfer
+                            </span>
+                          </div>
+
+                          <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 text-xs">
+                            <div className="bg-white/95 p-2.5 rounded-xl border border-emerald-200 flex items-center justify-between shadow-2xs">
+                              <div className="truncate pr-2">
+                                <span className="text-[9px] font-black uppercase text-slate-400 block tracking-wider">Telebirr Number</span>
+                                <span className="font-mono font-black text-sm text-slate-900 block truncate">
+                                  {storeData?.business.payment_phone || storeData?.business.phone || 'Contact Store'}
+                                </span>
+                              </div>
+                              <button
+                                type="button"
+                                onClick={() => handleCopyText(storeData?.business.payment_phone || storeData?.business.phone || '', 'telebirr_phone')}
+                                className="inline-flex items-center space-x-1 rounded-lg bg-emerald-100 hover:bg-emerald-200 text-emerald-800 px-2 py-1 text-[11px] font-bold transition flex-shrink-0 cursor-pointer"
+                              >
+                                {copiedField === 'telebirr_phone' ? (
+                                  <>
+                                    <Check className="h-3 w-3 text-emerald-700" />
+                                    <span>Copied</span>
+                                  </>
+                                ) : (
+                                  <>
+                                    <Copy className="h-3 w-3" />
+                                    <span>Copy</span>
+                                  </>
+                                )}
+                              </button>
+                            </div>
+
+                            <div className="bg-white/95 p-2.5 rounded-xl border border-emerald-200 flex items-center justify-between shadow-2xs">
+                              <div className="truncate pr-2">
+                                <span className="text-[9px] font-black uppercase text-slate-400 block tracking-wider">Account Name</span>
+                                <span className="font-bold text-xs text-slate-900 truncate block">
+                                  {storeData?.business.payment_account_name || storeData?.business.name}
+                                </span>
+                              </div>
+                              <button
+                                type="button"
+                                onClick={() => handleCopyText(storeData?.business.payment_account_name || storeData?.business.name || '', 'account_name')}
+                                className="inline-flex items-center space-x-1 rounded-lg bg-emerald-100 hover:bg-emerald-200 text-emerald-800 px-2 py-1 text-[11px] font-bold transition flex-shrink-0 cursor-pointer"
+                              >
+                                {copiedField === 'account_name' ? (
+                                  <>
+                                    <Check className="h-3 w-3 text-emerald-700" />
+                                    <span>Copied</span>
+                                  </>
+                                ) : (
+                                  <>
+                                    <Copy className="h-3 w-3" />
+                                    <span>Copy</span>
+                                  </>
+                                )}
+                              </button>
+                            </div>
+                          </div>
+
+                          <div className="bg-emerald-100/70 p-2.5 rounded-xl flex items-center justify-between">
+                            <div>
+                              <span className="text-[10px] font-bold uppercase text-emerald-900 block">Amount to Transfer:</span>
+                              <span className="text-sm font-black text-emerald-950">
+                                {currencySymbol} {cartTotal.toFixed(2)}
+                              </span>
+                            </div>
+                            <button
+                              type="button"
+                              onClick={() => handleCopyText(cartTotal.toFixed(2), 'cart_total')}
+                              className="inline-flex items-center space-x-1 rounded-lg bg-emerald-700 text-white hover:bg-emerald-800 px-2.5 py-1 text-[11px] font-bold shadow-xs transition cursor-pointer"
+                            >
+                              {copiedField === 'cart_total' ? (
+                                <>
+                                  <Check className="h-3 w-3" />
+                                  <span>Amount Copied</span>
+                                </>
+                              ) : (
+                                <>
+                                  <Copy className="h-3 w-3" />
+                                  <span>Copy Amount</span>
+                                </>
+                              )}
+                            </button>
+                          </div>
+
+                          <p className="text-[10px] text-emerald-900 leading-tight">
+                            {storeData?.business.payment_instructions || 'Open Telebirr app > Send Money to this number > Enter exact amount > Copy transaction reference ID & attach receipt screenshot below.'}
+                          </p>
+                        </div>
+                      )}
+
+                      {checkoutForm.payment_method === 'CBE Birr' && (
+                        <div className="rounded-2xl border-2 border-purple-500/40 bg-gradient-to-br from-purple-50 via-indigo-50/40 to-white p-3.5 space-y-2.5 shadow-xs animate-in fade-in duration-200">
+                          <div className="flex items-center justify-between">
+                            <span className="inline-flex items-center space-x-1.5 rounded-full bg-purple-700 px-2.5 py-0.5 text-[10px] font-black uppercase tracking-wider text-white shadow-xs">
+                              <CreditCard className="h-3 w-3" />
+                              <span>CBE Birr Mobile Transfer</span>
+                            </span>
+                            <span className="text-[10px] font-bold text-purple-800">
+                              Commercial Bank of Ethiopia
+                            </span>
+                          </div>
+
+                          <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 text-xs">
+                            <div className="bg-white/95 p-2.5 rounded-xl border border-purple-200 flex items-center justify-between shadow-2xs">
+                              <div className="truncate pr-2">
+                                <span className="text-[9px] font-black uppercase text-slate-400 block tracking-wider">CBE Account / Phone</span>
+                                <span className="font-mono font-black text-sm text-slate-900 block truncate">
+                                  {storeData?.business.cbe_account || storeData?.business.payment_phone || storeData?.business.phone || 'Contact Store'}
+                                </span>
+                              </div>
+                              <button
+                                type="button"
+                                onClick={() => handleCopyText(storeData?.business.cbe_account || storeData?.business.payment_phone || storeData?.business.phone || '', 'cbe_phone')}
+                                className="inline-flex items-center space-x-1 rounded-lg bg-purple-100 hover:bg-purple-200 text-purple-900 px-2 py-1 text-[11px] font-bold transition flex-shrink-0 cursor-pointer"
+                              >
+                                {copiedField === 'cbe_phone' ? (
+                                  <>
+                                    <Check className="h-3 w-3 text-purple-700" />
+                                    <span>Copied</span>
+                                  </>
+                                ) : (
+                                  <>
+                                    <Copy className="h-3 w-3" />
+                                    <span>Copy</span>
+                                  </>
+                                )}
+                              </button>
+                            </div>
+
+                            <div className="bg-white/95 p-2.5 rounded-xl border border-purple-200 flex items-center justify-between shadow-2xs">
+                              <div className="truncate pr-2">
+                                <span className="text-[9px] font-black uppercase text-slate-400 block tracking-wider">Account Holder Name</span>
+                                <span className="font-bold text-xs text-slate-900 truncate block">
+                                  {storeData?.business.payment_account_name || storeData?.business.name}
+                                </span>
+                              </div>
+                              <button
+                                type="button"
+                                onClick={() => handleCopyText(storeData?.business.payment_account_name || storeData?.business.name || '', 'account_name')}
+                                className="inline-flex items-center space-x-1 rounded-lg bg-purple-100 hover:bg-purple-200 text-purple-900 px-2 py-1 text-[11px] font-bold transition flex-shrink-0 cursor-pointer"
+                              >
+                                {copiedField === 'account_name' ? (
+                                  <>
+                                    <Check className="h-3 w-3 text-purple-700" />
+                                    <span>Copied</span>
+                                  </>
+                                ) : (
+                                  <>
+                                    <Copy className="h-3 w-3" />
+                                    <span>Copy</span>
+                                  </>
+                                )}
+                              </button>
+                            </div>
+                          </div>
+
+                          <div className="bg-purple-100/70 p-2.5 rounded-xl flex items-center justify-between">
+                            <div>
+                              <span className="text-[10px] font-bold uppercase text-purple-900 block">Amount to Transfer:</span>
+                              <span className="text-sm font-black text-purple-950">
+                                {currencySymbol} {cartTotal.toFixed(2)}
+                              </span>
+                            </div>
+                            <button
+                              type="button"
+                              onClick={() => handleCopyText(cartTotal.toFixed(2), 'cart_total')}
+                              className="inline-flex items-center space-x-1 rounded-lg bg-purple-700 text-white hover:bg-purple-800 px-2.5 py-1 text-[11px] font-bold shadow-xs transition cursor-pointer"
+                            >
+                              {copiedField === 'cart_total' ? (
+                                <>
+                                  <Check className="h-3 w-3" />
+                                  <span>Amount Copied</span>
+                                </>
+                              ) : (
+                                <>
+                                  <Copy className="h-3 w-3" />
+                                  <span>Copy Amount</span>
+                                </>
+                              )}
+                            </button>
+                          </div>
+
+                          <p className="text-[10px] text-purple-900 leading-tight">
+                            {storeData?.business.payment_instructions || 'Open CBE Birr app or dial *847# to transfer. Paste your transaction reference ID and attach receipt screenshot below.'}
+                          </p>
+                        </div>
+                      )}
+
+                      {checkoutForm.payment_method === 'Bank Transfer' && (
+                        <div className="rounded-2xl border-2 border-blue-500/40 bg-gradient-to-br from-blue-50 via-slate-50 to-white p-3.5 space-y-2.5 shadow-xs animate-in fade-in duration-200">
+                          <div className="flex items-center justify-between">
+                            <span className="inline-flex items-center space-x-1.5 rounded-full bg-blue-700 px-2.5 py-0.5 text-[10px] font-black uppercase tracking-wider text-white shadow-xs">
+                              <Building2 className="h-3 w-3" />
+                              <span>Bank Account Transfer</span>
+                            </span>
+                            <span className="text-[10px] font-bold text-blue-800">
+                              CBE & Other Banks
+                            </span>
+                          </div>
+
+                          <div className="space-y-2 text-xs">
+                            <div className="bg-white/95 p-2.5 rounded-xl border border-blue-200 flex items-center justify-between shadow-2xs">
+                              <div className="truncate pr-2">
+                                <span className="text-[9px] font-black uppercase text-slate-400 block tracking-wider">CBE Account Number</span>
+                                <span className="font-mono font-black text-sm text-slate-900 block truncate">
+                                  {storeData?.business.cbe_account || 'Contact Store for CBE Account'}
+                                </span>
+                              </div>
+                              {storeData?.business.cbe_account && (
+                                <button
+                                  type="button"
+                                  onClick={() => handleCopyText(storeData?.business.cbe_account || '', 'cbe_account')}
+                                  className="inline-flex items-center space-x-1 rounded-lg bg-blue-100 hover:bg-blue-200 text-blue-900 px-2 py-1 text-[11px] font-bold transition flex-shrink-0 cursor-pointer"
+                                >
+                                  {copiedField === 'cbe_account' ? (
+                                    <>
+                                      <Check className="h-3 w-3 text-blue-700" />
+                                      <span>Copied</span>
+                                    </>
+                                  ) : (
+                                    <>
+                                      <Copy className="h-3 w-3" />
+                                      <span>Copy</span>
+                                    </>
+                                  )}
+                                </button>
+                              )}
+                            </div>
+
+                            <div className="bg-white/95 p-2.5 rounded-xl border border-blue-200 flex items-center justify-between shadow-2xs">
+                              <div className="truncate pr-2">
+                                <span className="text-[9px] font-black uppercase text-slate-400 block tracking-wider">Account Recipient Name</span>
+                                <span className="font-bold text-xs text-slate-900 truncate block">
+                                  {storeData?.business.payment_account_name || storeData?.business.name}
+                                </span>
+                              </div>
+                              <button
+                                type="button"
+                                onClick={() => handleCopyText(storeData?.business.payment_account_name || storeData?.business.name || '', 'account_name')}
+                                className="inline-flex items-center space-x-1 rounded-lg bg-blue-100 hover:bg-blue-200 text-blue-900 px-2 py-1 text-[11px] font-bold transition flex-shrink-0 cursor-pointer"
+                              >
+                                {copiedField === 'account_name' ? (
+                                  <>
+                                    <Check className="h-3 w-3 text-blue-700" />
+                                    <span>Copied</span>
+                                  </>
+                                ) : (
+                                  <>
+                                    <Copy className="h-3 w-3" />
+                                    <span>Copy</span>
+                                  </>
+                                )}
+                              </button>
+                            </div>
+
+                            {storeData?.business.other_bank_info && (
+                              <div className="bg-white/95 p-2.5 rounded-xl border border-blue-200 flex items-center justify-between shadow-2xs">
+                                <div className="truncate pr-2">
+                                  <span className="text-[9px] font-black uppercase text-slate-400 block tracking-wider">Other Banks & Info</span>
+                                  <span className="font-bold text-xs text-slate-800 block truncate">
+                                    {storeData.business.other_bank_info}
+                                  </span>
+                                </div>
+                                <button
+                                  type="button"
+                                  onClick={() => handleCopyText(storeData?.business.other_bank_info || '', 'other_bank')}
+                                  className="inline-flex items-center space-x-1 rounded-lg bg-blue-100 hover:bg-blue-200 text-blue-900 px-2 py-1 text-[11px] font-bold transition flex-shrink-0 cursor-pointer"
+                                >
+                                  {copiedField === 'other_bank' ? (
+                                    <>
+                                      <Check className="h-3 w-3 text-blue-700" />
+                                      <span>Copied</span>
+                                    </>
+                                  ) : (
+                                    <>
+                                      <Copy className="h-3 w-3" />
+                                      <span>Copy</span>
+                                    </>
+                                  )}
+                                </button>
+                              </div>
+                            )}
+                          </div>
+
+                          <div className="bg-blue-100/70 p-2.5 rounded-xl flex items-center justify-between">
+                            <div>
+                              <span className="text-[10px] font-bold uppercase text-blue-900 block">Amount to Transfer:</span>
+                              <span className="text-sm font-black text-blue-950">
+                                {currencySymbol} {cartTotal.toFixed(2)}
+                              </span>
+                            </div>
+                            <button
+                              type="button"
+                              onClick={() => handleCopyText(cartTotal.toFixed(2), 'cart_total')}
+                              className="inline-flex items-center space-x-1 rounded-lg bg-blue-700 text-white hover:bg-blue-800 px-2.5 py-1 text-[11px] font-bold shadow-xs transition cursor-pointer"
+                            >
+                              {copiedField === 'cart_total' ? (
+                                <>
+                                  <Check className="h-3 w-3" />
+                                  <span>Amount Copied</span>
+                                </>
+                              ) : (
+                                <>
+                                  <Copy className="h-3 w-3" />
+                                  <span>Copy Amount</span>
+                                </>
+                              )}
+                            </button>
+                          </div>
+
+                          <p className="text-[10px] text-blue-900 leading-tight">
+                            {storeData?.business.payment_instructions || 'Transfer funds through your bank app or branch. Upload your PDF statement or slip photo below for verification.'}
+                          </p>
+                        </div>
+                      )}
+
+                      {checkoutForm.payment_method === 'Cash on Delivery' && (
+                        <div className="rounded-2xl border border-slate-200 bg-slate-50 p-3.5 space-y-1.5 animate-in fade-in duration-200 text-xs">
+                          <span className="inline-flex items-center space-x-1.5 text-xs font-bold text-slate-800">
+                            <Truck className="h-4 w-4 text-emerald-600" />
+                            <span>Cash on Delivery Selected</span>
+                          </span>
+                          <p className="text-[11px] text-slate-600 leading-snug">
+                            You can pay cash or transfer directly to our delivery courier when they arrive with your order. Advance receipt upload is not required!
+                          </p>
+                        </div>
+                      )}
 
                       {/* Bank Statement & Receipt Upload Container */}
                       <div className="rounded-2xl border border-emerald-200/90 bg-emerald-50/50 p-3.5 space-y-3">
@@ -1895,6 +2264,26 @@ function ShopContent() {
                   {orderSuccess.currency_symbol} {orderSuccess.total_amount.toFixed(2)}
                 </span>
               </div>
+
+              {orderSuccess.payment_method !== 'Cash on Delivery' && (
+                <div className="mt-3 p-3 rounded-xl bg-emerald-50 border border-emerald-200 text-left space-y-1.5 text-xs">
+                  <span className="text-[10px] font-black uppercase text-emerald-900 block">
+                    Store Payment Transfer Details
+                  </span>
+                  <div className="flex justify-between items-center text-slate-800">
+                    <span className="text-[11px] text-slate-500">Account / Phone:</span>
+                    <span className="font-mono font-bold text-emerald-950">
+                      {storeData?.business.payment_phone || storeData?.business.cbe_account || storeData?.business.phone}
+                    </span>
+                  </div>
+                  <div className="flex justify-between items-center text-slate-800">
+                    <span className="text-[11px] text-slate-500">Recipient Name:</span>
+                    <span className="font-bold text-slate-900">
+                      {storeData?.business.payment_account_name || storeData?.business.name}
+                    </span>
+                  </div>
+                </div>
+              )}
             </div>
 
             <div className="mt-6 flex flex-col space-y-2">
@@ -1914,6 +2303,179 @@ function ShopContent() {
                 className="w-full rounded-xl border border-slate-200 bg-white px-5 py-2.5 text-xs font-bold text-slate-700 hover:bg-slate-50 transition cursor-pointer"
               >
                 Continue Shopping
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Store Payment Accounts & Bank Details Modal */}
+      {isPaymentAccountsOpen && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-xs">
+          <div className="bg-white rounded-3xl p-6 sm:p-7 max-w-md w-full shadow-2xl border border-slate-100 animate-in fade-in zoom-in-95 duration-200">
+            <div className="flex items-center justify-between pb-3 border-b border-slate-100">
+              <div className="flex items-center space-x-2.5">
+                <div className="h-10 w-10 rounded-2xl bg-emerald-100 text-emerald-700 flex items-center justify-center font-bold">
+                  <CreditCard className="h-5 w-5" />
+                </div>
+                <div>
+                  <h3 className="text-base font-black text-slate-900">Store Payment Accounts</h3>
+                  <p className="text-[11px] text-slate-500">Official Telebirr & Bank accounts</p>
+                </div>
+              </div>
+              <button
+                onClick={() => setIsPaymentAccountsOpen(false)}
+                className="rounded-lg p-1.5 text-slate-400 hover:bg-slate-100 transition cursor-pointer"
+              >
+                <X className="h-4 w-4" />
+              </button>
+            </div>
+
+            <div className="py-4 space-y-3">
+              {/* Telebirr */}
+              <div className="p-3.5 rounded-2xl bg-gradient-to-br from-emerald-50 to-teal-50/40 border border-emerald-200/80">
+                <div className="flex items-center justify-between mb-1.5">
+                  <span className="text-[10px] font-black uppercase tracking-wider text-emerald-800 flex items-center">
+                    <Smartphone className="h-3.5 w-3.5 mr-1 text-emerald-600" />
+                    Telebirr Direct
+                  </span>
+                  <span className="text-[10px] font-bold text-emerald-600">Mobile Transfer</span>
+                </div>
+                <div className="flex items-center justify-between bg-white p-2 rounded-xl border border-emerald-200 shadow-2xs">
+                  <div className="truncate pr-2">
+                    <span className="text-[9px] uppercase text-slate-400 block font-bold">Merchant / Phone Number</span>
+                    <span className="font-mono font-black text-sm text-slate-900 block truncate">
+                      {storeData?.business.payment_phone || storeData?.business.phone || 'Contact Store'}
+                    </span>
+                  </div>
+                  <button
+                    type="button"
+                    onClick={() => handleCopyText(storeData?.business.payment_phone || storeData?.business.phone || '', 'modal_telebirr')}
+                    className="inline-flex items-center space-x-1 rounded-lg bg-emerald-100 hover:bg-emerald-200 text-emerald-800 px-2.5 py-1 text-xs font-bold transition flex-shrink-0 cursor-pointer"
+                  >
+                    {copiedField === 'modal_telebirr' ? (
+                      <>
+                        <Check className="h-3 w-3 text-emerald-700" />
+                        <span>Copied</span>
+                      </>
+                    ) : (
+                      <>
+                        <Copy className="h-3 w-3" />
+                        <span>Copy</span>
+                      </>
+                    )}
+                  </button>
+                </div>
+              </div>
+
+              {/* CBE Bank */}
+              <div className="p-3.5 rounded-2xl bg-gradient-to-br from-purple-50 to-indigo-50/40 border border-purple-200/80">
+                <div className="flex items-center justify-between mb-1.5">
+                  <span className="text-[10px] font-black uppercase tracking-wider text-purple-900 flex items-center">
+                    <Building2 className="h-3.5 w-3.5 mr-1 text-purple-700" />
+                    Commercial Bank of Ethiopia (CBE)
+                  </span>
+                  <span className="text-[10px] font-bold text-purple-700">Account / CBE Birr</span>
+                </div>
+                <div className="flex items-center justify-between bg-white p-2 rounded-xl border border-purple-200 shadow-2xs">
+                  <div className="truncate pr-2">
+                    <span className="text-[9px] uppercase text-slate-400 block font-bold">Account Number</span>
+                    <span className="font-mono font-black text-sm text-slate-900 block truncate">
+                      {storeData?.business.cbe_account || 'Contact Store'}
+                    </span>
+                  </div>
+                  {storeData?.business.cbe_account && (
+                    <button
+                      type="button"
+                      onClick={() => handleCopyText(storeData?.business.cbe_account || '', 'modal_cbe')}
+                      className="inline-flex items-center space-x-1 rounded-lg bg-purple-100 hover:bg-purple-200 text-purple-900 px-2.5 py-1 text-xs font-bold transition flex-shrink-0 cursor-pointer"
+                    >
+                      {copiedField === 'modal_cbe' ? (
+                        <>
+                          <Check className="h-3 w-3 text-purple-700" />
+                          <span>Copied</span>
+                        </>
+                      ) : (
+                        <>
+                          <Copy className="h-3 w-3" />
+                          <span>Copy</span>
+                        </>
+                      )}
+                    </button>
+                  )}
+                </div>
+              </div>
+
+              {/* Recipient Account Name */}
+              <div className="bg-slate-50 p-3 rounded-2xl border border-slate-200 flex items-center justify-between">
+                <div className="truncate pr-2">
+                  <span className="text-[10px] uppercase font-bold text-slate-400 block">Account Recipient Name</span>
+                  <span className="text-xs font-bold text-slate-900 block truncate">
+                    {storeData?.business.payment_account_name || storeData?.business.name}
+                  </span>
+                </div>
+                <button
+                  type="button"
+                  onClick={() => handleCopyText(storeData?.business.payment_account_name || storeData?.business.name || '', 'modal_name')}
+                  className="inline-flex items-center space-x-1 rounded-lg bg-slate-200 hover:bg-slate-300 text-slate-800 px-2.5 py-1 text-xs font-bold transition flex-shrink-0 cursor-pointer"
+                >
+                  {copiedField === 'modal_name' ? (
+                    <>
+                      <Check className="h-3 w-3 text-emerald-700" />
+                      <span>Copied</span>
+                    </>
+                  ) : (
+                    <>
+                      <Copy className="h-3 w-3" />
+                      <span>Copy</span>
+                    </>
+                  )}
+                </button>
+              </div>
+
+              {/* Other Banks (if set) */}
+              {storeData?.business.other_bank_info && (
+                <div className="bg-slate-50 p-3 rounded-2xl border border-slate-200 flex items-center justify-between">
+                  <div className="truncate pr-2">
+                    <span className="text-[10px] uppercase font-bold text-slate-400 block">Other Banks Info</span>
+                    <span className="text-xs font-bold text-slate-800 block truncate">
+                      {storeData.business.other_bank_info}
+                    </span>
+                  </div>
+                  <button
+                    type="button"
+                    onClick={() => handleCopyText(storeData?.business.other_bank_info || '', 'modal_other')}
+                    className="inline-flex items-center space-x-1 rounded-lg bg-slate-200 hover:bg-slate-300 text-slate-800 px-2.5 py-1 text-xs font-bold transition flex-shrink-0 cursor-pointer"
+                  >
+                    {copiedField === 'modal_other' ? (
+                      <>
+                        <Check className="h-3 w-3 text-emerald-700" />
+                        <span>Copied</span>
+                      </>
+                    ) : (
+                      <>
+                        <Copy className="h-3 w-3" />
+                        <span>Copy</span>
+                      </>
+                    )}
+                  </button>
+                </div>
+              )}
+
+              {/* Instructions */}
+              <div className="p-3 rounded-2xl bg-amber-50/70 border border-amber-200/80 text-xs text-amber-900 leading-snug">
+                <span className="font-bold block mb-0.5">Instructions:</span>
+                {storeData?.business.payment_instructions || 'Please transfer the exact amount for your order. After sending, enter your transaction reference number and upload your payment receipt at checkout.'}
+              </div>
+            </div>
+
+            <div className="pt-2">
+              <button
+                type="button"
+                onClick={() => setIsPaymentAccountsOpen(false)}
+                className="w-full rounded-xl bg-slate-900 py-2.5 text-xs font-bold text-white hover:bg-slate-800 transition cursor-pointer"
+              >
+                Close
               </button>
             </div>
           </div>

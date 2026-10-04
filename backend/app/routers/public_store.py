@@ -76,7 +76,12 @@ def get_public_store_data(
             "email": biz.email,
             "address": biz.address,
             "currency": biz.currency or "ETB",
-            "currency_symbol": biz.currency_symbol or "Br"
+            "currency_symbol": biz.currency_symbol or "Br",
+            "payment_phone": getattr(biz, "payment_phone", None) or biz.phone,
+            "payment_account_name": getattr(biz, "payment_account_name", None) or biz.name,
+            "cbe_account": getattr(biz, "cbe_account", None),
+            "other_bank_info": getattr(biz, "other_bank_info", None),
+            "payment_instructions": getattr(biz, "payment_instructions", None),
         },
         "categories": [
             {"id": c.id, "name": c.name}
