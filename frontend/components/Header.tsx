@@ -363,10 +363,10 @@ export const Header: React.FC<HeaderProps> = ({ onMenuClick, title }) => {
           <div className="relative" ref={notifRef}>
             <button
               onClick={handleToggleNotifications}
-              className={`relative p-2.5 rounded-xl transition ${
+              className={`relative p-2.5 rounded-xl transition cursor-pointer ${
                 notificationsOpen 
-                  ? 'bg-slate-100 text-slate-900 ring-2 ring-emerald-500/20' 
-                  : 'text-slate-500 hover:bg-slate-100 hover:text-slate-800'
+                  ? 'bg-slate-100 dark:bg-slate-800 text-slate-900 dark:text-white ring-2 ring-emerald-500/20' 
+                  : 'text-slate-500 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 hover:text-slate-800 dark:hover:text-slate-100'
               }`}
               title={
                 isDelivery 
@@ -379,7 +379,7 @@ export const Header: React.FC<HeaderProps> = ({ onMenuClick, title }) => {
               <Bell className="h-5 w-5" />
               {/* Badge is completely removed once seen */}
               {badgeCount > 0 && (
-                <span className="absolute top-1 right-1 flex h-4.5 min-w-[18px] px-1 items-center justify-center rounded-full text-[10px] font-black text-white shadow-xs animate-pulse bg-red-500 ring-2 ring-white">
+                <span className="absolute top-1 right-1 flex h-4.5 min-w-[18px] px-1 items-center justify-center rounded-full text-[10px] font-black text-white shadow-xs animate-pulse bg-red-500 ring-2 ring-white dark:ring-slate-900">
                   {badgeCount > 99 ? '99+' : badgeCount}
                 </span>
               )}
@@ -388,19 +388,19 @@ export const Header: React.FC<HeaderProps> = ({ onMenuClick, title }) => {
             {/* Notifications Dropdown */}
             {notificationsOpen && (
               <div 
-                className="absolute right-0 mt-2 w-84 sm:w-[420px] rounded-2xl bg-white p-4 shadow-2xl border border-slate-200 z-50 text-slate-800 animate-in fade-in slide-in-from-top-2 duration-150"
+                className="absolute right-0 mt-2 w-84 sm:w-[420px] rounded-2xl bg-white dark:bg-slate-900 p-4 shadow-2xl border border-slate-200 dark:border-slate-800 z-50 text-slate-800 dark:text-slate-100 animate-in fade-in slide-in-from-top-2 duration-150"
                 onClick={(e) => e.stopPropagation()}
               >
                 {/* Header */}
-                <div className="flex items-center justify-between pb-3 border-b border-slate-100">
+                <div className="flex items-center justify-between pb-3 border-b border-slate-100 dark:border-slate-800">
                   <div className="flex items-center space-x-2">
-                    <span className="font-black text-sm text-slate-900">Notifications & Activity</span>
+                    <span className="font-black text-sm text-slate-900 dark:text-white">Notifications & Activity</span>
                     {badgeCount > 0 ? (
-                      <span className="rounded-full bg-red-100 text-red-800 px-2 py-0.5 text-xs font-bold animate-pulse">
+                      <span className="rounded-full bg-red-100 dark:bg-red-950/60 text-red-800 dark:text-red-300 px-2 py-0.5 text-xs font-bold animate-pulse">
                         {badgeCount} New
                       </span>
                     ) : (
-                      <span className="rounded-full bg-slate-100 text-slate-500 px-2 py-0.5 text-[11px] font-semibold">
+                      <span className="rounded-full bg-slate-100 dark:bg-slate-800 text-slate-500 dark:text-slate-400 px-2 py-0.5 text-[11px] font-semibold">
                         All Seen
                       </span>
                     )}
@@ -410,17 +410,17 @@ export const Header: React.FC<HeaderProps> = ({ onMenuClick, title }) => {
                     {displayedItems.length > 0 && (
                       <button
                         onClick={handleClearAllList}
-                        className="text-xs font-bold text-slate-500 hover:text-slate-800 flex items-center transition px-2 py-1 rounded-lg hover:bg-slate-100"
+                        className="text-xs font-bold text-slate-500 dark:text-slate-400 hover:text-slate-800 dark:hover:text-slate-200 flex items-center transition px-2 py-1 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800 cursor-pointer"
                         title="Clear all seen items from this tray"
                       >
-                        <CheckCheck className="mr-1 h-3.5 w-3.5 text-emerald-600" />
-                        Clear List
+                        <CheckCheck className="mr-1 h-3.5 w-3.5 text-emerald-600 dark:text-emerald-400" />
+                        {t('btn_clear_list', 'Clear List')}
                       </button>
                     )}
                     <Link
                       href={isDelivery ? "/delivery" : isCoAdmin ? "/orders" : "/admin"}
                       onClick={() => setNotificationsOpen(false)}
-                      className="text-xs font-bold text-emerald-600 hover:text-emerald-700 flex items-center transition"
+                      className="text-xs font-bold text-emerald-600 dark:text-emerald-400 hover:text-emerald-700 dark:hover:text-emerald-300 flex items-center transition"
                     >
                       {isDelivery ? "Delivery Hub" : isCoAdmin ? "Online Orders" : "Admin Hub"} <ArrowRight className="ml-1 h-3 w-3" />
                     </Link>
@@ -701,26 +701,26 @@ export const Header: React.FC<HeaderProps> = ({ onMenuClick, title }) => {
             onClick={() => setProfileMenuOpen(!profileMenuOpen)}
             className={`flex items-center space-x-2.5 p-1 rounded-xl transition cursor-pointer select-none ${
               profileMenuOpen 
-                ? 'bg-slate-100 ring-2 ring-emerald-500/20' 
-                : 'hover:bg-slate-100'
+                ? 'bg-slate-100 dark:bg-slate-800 ring-2 ring-emerald-500/20' 
+                : 'hover:bg-slate-100 dark:hover:bg-slate-800'
             }`}
             title="User Profile & Settings"
           >
             {/* Business and Role status */}
-            <div className="flex items-center space-x-2 rounded-lg bg-slate-100 px-3 py-1.5 text-xs font-medium text-slate-700">
+            <div className="flex items-center space-x-2 rounded-lg bg-slate-100 dark:bg-slate-800 px-3 py-1.5 text-xs font-medium text-slate-700 dark:text-slate-200">
               {isAdmin ? (
-                <ShieldCheck className="h-4 w-4 text-emerald-600" />
+                <ShieldCheck className="h-4 w-4 text-emerald-600 dark:text-emerald-400" />
               ) : isDelivery ? (
-                <Truck className="h-4 w-4 text-amber-600" />
+                <Truck className="h-4 w-4 text-amber-600 dark:text-amber-400" />
               ) : isCoAdmin ? (
-                <Sparkles className="h-4 w-4 text-purple-600" />
+                <Sparkles className="h-4 w-4 text-purple-600 dark:text-purple-400" />
               ) : (
-                <UserCheck className="h-4 w-4 text-blue-600" />
+                <UserCheck className="h-4 w-4 text-blue-600 dark:text-blue-400" />
               )}
-              <span className="font-semibold text-slate-900 hidden sm:inline">{user?.business_name || 'My Store'}</span>
+              <span className="font-semibold text-slate-900 dark:text-white hidden sm:inline">{user?.business_name || 'My Store'}</span>
               <span className="text-slate-400 hidden sm:inline">•</span>
               <span className={`font-bold ${
-                isAdmin ? 'text-emerald-700' : isCoAdmin ? 'text-purple-700' : isDelivery ? 'text-amber-700' : 'text-blue-700'
+                isAdmin ? 'text-emerald-700 dark:text-emerald-400' : isCoAdmin ? 'text-purple-700 dark:text-purple-400' : isDelivery ? 'text-amber-700 dark:text-amber-400' : 'text-blue-700 dark:text-blue-400'
               }`}>
                 {roleLabel}
               </span>
@@ -734,17 +734,17 @@ export const Header: React.FC<HeaderProps> = ({ onMenuClick, title }) => {
             </div>
 
             {/* Chevron Icon */}
-            <ChevronDown className={`h-4 w-4 text-slate-400 transition-transform duration-150 ${profileMenuOpen ? 'rotate-180 text-slate-600' : ''}`} />
+            <ChevronDown className={`h-4 w-4 text-slate-400 transition-transform duration-150 ${profileMenuOpen ? 'rotate-180 text-slate-600 dark:text-slate-300' : ''}`} />
           </button>
 
           {/* Profile Dropdown Menu with Settings & Logout */}
           {profileMenuOpen && (
             <div
-              className="absolute right-0 mt-2 w-64 rounded-2xl bg-white p-2 shadow-2xl border border-slate-200 z-50 text-slate-800 animate-in fade-in slide-in-from-top-2 duration-150"
+              className="absolute right-0 mt-2 w-64 rounded-2xl bg-white dark:bg-slate-900 p-2 shadow-2xl border border-slate-200 dark:border-slate-800 z-50 text-slate-800 dark:text-slate-100 animate-in fade-in slide-in-from-top-2 duration-150"
               onClick={(e) => e.stopPropagation()}
             >
               {/* User Details Header */}
-              <div className="p-3 border-b border-slate-100">
+              <div className="p-3 border-b border-slate-100 dark:border-slate-800">
                 <div className="flex items-center space-x-3">
                   <div className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-full text-base font-bold text-white shadow-xs ${
                     isAdmin ? 'bg-emerald-700' : isCoAdmin ? 'bg-purple-700' : isDelivery ? 'bg-amber-600' : 'bg-blue-700'
@@ -752,24 +752,24 @@ export const Header: React.FC<HeaderProps> = ({ onMenuClick, title }) => {
                     {user?.name ? user.name.charAt(0).toUpperCase() : 'U'}
                   </div>
                   <div className="min-w-0 flex-1">
-                    <h4 className="text-sm font-bold text-slate-900 truncate">{user?.name || 'Staff User'}</h4>
-                    <p className="text-xs text-slate-500 truncate">@{user?.username || 'user'}</p>
+                    <h4 className="text-sm font-bold text-slate-900 dark:text-white truncate">{user?.name || 'Staff User'}</h4>
+                    <p className="text-xs text-slate-500 dark:text-slate-400 truncate">@{user?.username || 'user'}</p>
                   </div>
                 </div>
 
                 <div className="mt-2.5 flex items-center justify-between">
                   <span className={`inline-flex items-center px-2 py-0.5 rounded-md text-[10px] font-black uppercase tracking-wider border ${
                     isAdmin 
-                      ? 'bg-emerald-50 text-emerald-800 border-emerald-200' 
+                      ? 'bg-emerald-50 dark:bg-emerald-950/60 text-emerald-800 dark:text-emerald-300 border-emerald-200 dark:border-emerald-800' 
                       : isCoAdmin 
-                      ? 'bg-purple-50 text-purple-800 border-purple-200' 
+                      ? 'bg-purple-50 dark:bg-purple-950/60 text-purple-800 dark:text-purple-300 border-purple-200 dark:border-purple-800' 
                       : isDelivery
-                      ? 'bg-amber-50 text-amber-800 border-amber-200'
-                      : 'bg-blue-50 text-blue-800 border-blue-200'
+                      ? 'bg-amber-50 dark:bg-amber-950/60 text-amber-800 dark:text-amber-300 border-amber-200 dark:border-amber-800' 
+                      : 'bg-blue-50 dark:bg-blue-950/60 text-blue-800 dark:text-blue-300 border-blue-200 dark:border-blue-800'
                   }`}>
                     {roleLabel}
                   </span>
-                  <span className="text-[11px] text-slate-500 font-medium truncate max-w-[120px]">
+                  <span className="text-[11px] text-slate-500 dark:text-slate-400 font-medium truncate max-w-[120px]">
                     {user?.business_name}
                   </span>
                 </div>
@@ -780,20 +780,20 @@ export const Header: React.FC<HeaderProps> = ({ onMenuClick, title }) => {
                 <Link
                   href="/settings"
                   onClick={() => setProfileMenuOpen(false)}
-                  className="flex items-center space-x-2.5 px-3 py-2.5 rounded-xl hover:bg-slate-100 text-slate-700 font-semibold text-xs transition"
+                  className="flex items-center space-x-2.5 px-3 py-2.5 rounded-xl hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-700 dark:text-slate-200 font-semibold text-xs transition"
                 >
-                  <Settings className="h-4 w-4 text-slate-500" />
-                  <span>Settings & Profile</span>
+                  <Settings className="h-4 w-4 text-slate-500 dark:text-slate-400" />
+                  <span>{t('nav_settings', 'Settings & Profile')}</span>
                 </Link>
 
                 {isAdmin && (
                   <Link
                     href="/admin"
                     onClick={() => setProfileMenuOpen(false)}
-                    className="flex items-center space-x-2.5 px-3 py-2.5 rounded-xl hover:bg-emerald-50 text-emerald-800 font-semibold text-xs transition"
+                    className="flex items-center space-x-2.5 px-3 py-2.5 rounded-xl hover:bg-emerald-50 dark:hover:bg-emerald-950/40 text-emerald-800 dark:text-emerald-300 font-semibold text-xs transition"
                   >
-                    <ShieldCheck className="h-4 w-4 text-emerald-600" />
-                    <span>Admin Dashboard</span>
+                    <ShieldCheck className="h-4 w-4 text-emerald-600 dark:text-emerald-400" />
+                    <span>{t('nav_admin', 'Admin Dashboard')}</span>
                   </Link>
                 )}
 
@@ -801,10 +801,10 @@ export const Header: React.FC<HeaderProps> = ({ onMenuClick, title }) => {
                   <Link
                     href="/delivery"
                     onClick={() => setProfileMenuOpen(false)}
-                    className="flex items-center space-x-2.5 px-3 py-2.5 rounded-xl hover:bg-amber-50 text-amber-800 font-semibold text-xs transition"
+                    className="flex items-center space-x-2.5 px-3 py-2.5 rounded-xl hover:bg-amber-50 dark:hover:bg-amber-950/40 text-amber-800 dark:text-amber-300 font-semibold text-xs transition"
                   >
-                    <Truck className="h-4 w-4 text-amber-600" />
-                    <span>Delivery Courier Hub</span>
+                    <Truck className="h-4 w-4 text-amber-600 dark:text-amber-400" />
+                    <span>{t('nav_delivery', 'Delivery Courier Hub')}</span>
                   </Link>
                 )}
 
@@ -812,25 +812,25 @@ export const Header: React.FC<HeaderProps> = ({ onMenuClick, title }) => {
                   <Link
                     href="/orders"
                     onClick={() => setProfileMenuOpen(false)}
-                    className="flex items-center space-x-2.5 px-3 py-2.5 rounded-xl hover:bg-purple-50 text-purple-800 font-semibold text-xs transition"
+                    className="flex items-center space-x-2.5 px-3 py-2.5 rounded-xl hover:bg-purple-50 dark:hover:bg-purple-950/40 text-purple-800 dark:text-purple-300 font-semibold text-xs transition"
                   >
-                    <ShoppingBag className="h-4 w-4 text-purple-600" />
-                    <span>Online Orders</span>
+                    <ShoppingBag className="h-4 w-4 text-purple-600 dark:text-purple-400" />
+                    <span>{t('nav_orders', 'Online Orders')}</span>
                   </Link>
                 )}
               </div>
 
               {/* Sign Out / Logout */}
-              <div className="pt-1.5 border-t border-slate-100">
+              <div className="pt-1.5 border-t border-slate-100 dark:border-slate-800">
                 <button
                   onClick={() => {
                     setProfileMenuOpen(false);
                     logout();
                   }}
-                  className="w-full flex items-center space-x-2.5 px-3 py-2.5 rounded-xl hover:bg-red-50 text-red-600 font-semibold text-xs transition text-left cursor-pointer"
+                  className="w-full flex items-center space-x-2.5 px-3 py-2.5 rounded-xl hover:bg-red-50 dark:hover:bg-red-950/40 text-red-600 dark:text-red-400 font-semibold text-xs transition text-left cursor-pointer"
                 >
                   <LogOut className="h-4 w-4 text-red-500" />
-                  <span>Logout</span>
+                  <span>{t('btn_sign_out', 'Logout')}</span>
                 </button>
               </div>
             </div>

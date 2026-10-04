@@ -29,11 +29,13 @@ import {
 import { Sidebar } from '@/components/Sidebar';
 import { Header } from '@/components/Header';
 import { useAuth } from '@/lib/auth';
+import { useLanguage } from '@/lib/language';
 import { apiRequest } from '@/lib/api';
 import { Sale } from '@/types';
 
 export default function DeliveryTerminalPage() {
   const { user, loading: authLoading } = useAuth();
+  const { t, language } = useLanguage();
   const router = useRouter();
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [orders, setOrders] = useState<Sale[]>([]);
@@ -184,7 +186,7 @@ export default function DeliveryTerminalPage() {
 
   if (authLoading || (!user && loading)) {
     return (
-      <div className="flex h-screen items-center justify-center bg-slate-50">
+      <div className="flex h-screen items-center justify-center bg-slate-50 dark:bg-slate-950">
         <Loader2 className="h-8 w-8 animate-spin text-purple-600" />
       </div>
     );
@@ -192,22 +194,26 @@ export default function DeliveryTerminalPage() {
 
   if (user?.role === 'employee') {
     return (
-      <div className="flex h-screen bg-slate-50 font-sans text-slate-800">
+      <div className="flex h-screen bg-slate-50 dark:bg-slate-950 font-sans text-slate-800 dark:text-slate-100 transition-colors duration-200">
         <Sidebar isOpen={sidebarOpen} onClose={() => setSidebarOpen(false)} />
         <div className="flex flex-1 flex-col overflow-hidden">
-          <Header onMenuClick={() => setSidebarOpen(true)} title="Delivery Driver Terminal" />
+          <Header onMenuClick={() => setSidebarOpen(true)} title={t('nav_delivery', 'Delivery Driver Terminal')} />
           <main className="flex-1 flex items-center justify-center p-8">
-            <div className="max-w-md w-full bg-white p-8 rounded-3xl border border-slate-200 text-center shadow-xs">
+            <div className="max-w-md w-full bg-white dark:bg-slate-900 p-8 rounded-3xl border border-slate-200 dark:border-slate-800 text-center shadow-xs">
               <Truck className="h-12 w-12 text-amber-500 mx-auto mb-3" />
-              <h3 className="text-lg font-bold text-slate-900">Access Restricted</h3>
-              <p className="text-xs text-slate-500 mt-2">
-                The Delivery Driver Terminal is restricted to Delivery Personnel and Store Management.
+              <h3 className="text-lg font-bold text-slate-900 dark:text-white">
+                {language === 'am' ? 'ይህ ገጽ የተገደበ ነው' : 'Access Restricted'}
+              </h3>
+              <p className="text-xs text-slate-500 dark:text-slate-400 mt-2">
+                {language === 'am' 
+                  ? 'ይህ የማድረሻ ተርሚናል ለአድራሾች እና ለስራ አስኪያጆች ብቻ የተፈቀደ ነው' 
+                  : 'The Delivery Driver Terminal is restricted to Delivery Personnel and Store Management.'}
               </p>
               <Link
                 href="/employee"
-                className="mt-6 inline-flex items-center rounded-xl bg-emerald-600 px-5 py-2.5 text-xs font-bold text-white hover:bg-emerald-500 transition"
+                className="mt-6 inline-flex items-center rounded-xl bg-emerald-600 px-5 py-2.5 text-xs font-bold text-white hover:bg-emerald-500 transition shadow-xs"
               >
-                Go to Staff Workspace
+                {language === 'am' ? 'ወደ ሰራተኛ የስራ ገጽ ሂድ' : 'Go to Staff Workspace'}
               </Link>
             </div>
           </main>
@@ -217,11 +223,11 @@ export default function DeliveryTerminalPage() {
   }
 
   return (
-    <div className="flex h-screen bg-slate-50 font-sans text-slate-800">
+    <div className="flex h-screen bg-slate-50 dark:bg-slate-950 font-sans text-slate-800 dark:text-slate-100 transition-colors duration-200">
       <Sidebar isOpen={sidebarOpen} onClose={() => setSidebarOpen(false)} />
 
       <div className="flex flex-1 flex-col overflow-hidden">
-        <Header onMenuClick={() => setSidebarOpen(true)} title="Delivery Driver Terminal" />
+        <Header onMenuClick={() => setSidebarOpen(true)} title={t('nav_delivery', 'Delivery Driver Terminal')} />
 
         <main className="flex-1 overflow-y-auto p-4 sm:p-6 lg:p-8">
           {/* Header Title */}
@@ -232,11 +238,13 @@ export default function DeliveryTerminalPage() {
                   <Truck className="h-6 w-6" />
                 </div>
                 <div>
-                  <h2 className="text-2xl font-black text-slate-900 tracking-tight">
-                    Delivery Driver Terminal
+                  <h2 className="text-2xl font-black text-slate-900 dark:text-white tracking-tight">
+                    {t('nav_delivery', 'Delivery Driver Terminal')}
                   </h2>
-                  <p className="text-xs text-slate-500">
-                    Live queue of verified online customer orders ready for pickup and dispatch.
+                  <p className="text-xs text-slate-500 dark:text-slate-400">
+                    {language === 'am' 
+                      ? 'ለርክክብ እና ለማጓጓዝ የተዘጋጁ የተረጋገጡ የኦንላይን ትዕዛዞች ዝርዝር' 
+                      : 'Live queue of verified online customer orders ready for pickup and dispatch.'}
                   </p>
                 </div>
               </div>
@@ -245,17 +253,17 @@ export default function DeliveryTerminalPage() {
             <div className="flex items-center space-x-3">
               <Link
                 href="/orders"
-                className="inline-flex items-center rounded-xl border border-slate-200 bg-white px-3.5 py-2 text-xs font-bold text-slate-700 hover:bg-slate-50 transition shadow-xs"
+                className="inline-flex items-center rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 px-3.5 py-2 text-xs font-bold text-slate-700 dark:text-slate-200 hover:bg-slate-50 dark:hover:bg-slate-700 transition shadow-xs"
               >
                 <ShoppingBag className="mr-1.5 h-3.5 w-3.5 text-emerald-600" />
-                All Store Orders
+                {t('nav_orders', 'All Store Orders')}
               </Link>
 
               <button
                 onClick={fetchDeliveryOrders}
                 disabled={loading}
-                className="inline-flex items-center rounded-xl border border-slate-200 bg-white p-2 text-slate-600 hover:bg-slate-50 transition shadow-xs cursor-pointer"
-                title="Refresh delivery queue"
+                className="inline-flex items-center rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 p-2 text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-700 transition shadow-xs cursor-pointer"
+                title={t('btn_refresh', 'Refresh')}
               >
                 <RefreshCw className={`h-4 w-4 ${loading ? 'animate-spin text-purple-600' : ''}`} />
               </button>
@@ -264,35 +272,47 @@ export default function DeliveryTerminalPage() {
 
           {/* Quick Metrics */}
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-6">
-            <div className="rounded-2xl border border-emerald-300/80 bg-emerald-50/50 p-4 shadow-xs">
-              <span className="text-[11px] font-black text-emerald-800 uppercase block">Ready for Pickup</span>
-              <p className="text-3xl font-black text-emerald-700 mt-1">{readyCount}</p>
-              <p className="text-xs text-emerald-900/70 mt-0.5">Admin verified • Ready to dispatch</p>
+            <div className="rounded-2xl border border-emerald-300/80 dark:border-emerald-800 bg-emerald-50/50 dark:bg-emerald-950/30 p-4 shadow-xs">
+              <span className="text-[11px] font-black text-emerald-800 dark:text-emerald-300 uppercase block">
+                {language === 'am' ? 'ለርክክብ የተዘጋጁ' : 'Ready for Pickup'}
+              </span>
+              <p className="text-3xl font-black text-emerald-700 dark:text-emerald-400 mt-1">{readyCount}</p>
+              <p className="text-xs text-emerald-900/70 dark:text-emerald-400/80 mt-0.5">
+                {language === 'am' ? 'በአስተዳዳሪ የተረጋገጠ • ለጭነት ዝግጁ' : 'Admin verified • Ready to dispatch'}
+              </p>
             </div>
 
-            <div className="rounded-2xl border border-purple-300/80 bg-purple-50/50 p-4 shadow-xs">
-              <span className="text-[11px] font-black text-purple-800 uppercase block">Out for Delivery</span>
-              <p className="text-3xl font-black text-purple-700 mt-1">{inTransitCount}</p>
-              <p className="text-xs text-purple-900/70 mt-0.5">Currently on road with driver</p>
+            <div className="rounded-2xl border border-purple-300/80 dark:border-purple-800 bg-purple-50/50 dark:bg-purple-950/30 p-4 shadow-xs">
+              <span className="text-[11px] font-black text-purple-800 dark:text-purple-300 uppercase block">
+                {language === 'am' ? 'በማድረስ ላይ' : 'Out for Delivery'}
+              </span>
+              <p className="text-3xl font-black text-purple-700 dark:text-purple-400 mt-1">{inTransitCount}</p>
+              <p className="text-xs text-purple-900/70 dark:text-purple-400/80 mt-0.5">
+                {language === 'am' ? 'ከሹፌር ጋር በመንገድ ላይ' : 'Currently on road with driver'}
+              </p>
             </div>
 
-            <div className="rounded-2xl border border-slate-200/90 bg-white p-4 shadow-xs">
-              <span className="text-[11px] font-bold text-slate-400 uppercase block">Delivered Today</span>
-              <p className="text-3xl font-black text-slate-900 mt-1">{completedCount}</p>
-              <p className="text-xs text-slate-500 mt-0.5">Successfully handed to customer</p>
+            <div className="rounded-2xl border border-slate-200/90 dark:border-slate-800 bg-white dark:bg-slate-900 p-4 shadow-xs">
+              <span className="text-[11px] font-bold text-slate-400 dark:text-slate-500 uppercase block">
+                {language === 'am' ? 'ዛሬ የተረከቡ' : 'Delivered Today'}
+              </span>
+              <p className="text-3xl font-black text-slate-900 dark:text-white mt-1">{completedCount}</p>
+              <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">
+                {language === 'am' ? 'ለደንበኛ በተሳካ ሁኔታ ተላልፏል' : 'Successfully handed to customer'}
+              </p>
             </div>
           </div>
 
           {/* Filter Bar */}
-          <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3 mb-6 bg-white p-3 rounded-2xl border border-slate-200 shadow-xs">
+          <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3 mb-6 bg-white dark:bg-slate-900 p-3 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-xs">
             <div className="relative flex-1">
-              <Search className="absolute left-3.5 top-3 h-4 w-4 text-slate-400" />
+              <Search className="absolute left-3.5 top-3 h-4 w-4 text-slate-400 dark:text-slate-500" />
               <input
                 type="text"
-                placeholder="Search by customer name, phone number, address, or order ID..."
+                placeholder={language === 'am' ? 'በደንበኛ ስም፣ ስልክ፣ አድራሻ ወይም ትዕዛዝ ቁጥር ይፈልጉ...' : 'Search by customer name, phone number, address, or order ID...'}
                 value={search}
                 onChange={(e) => setSearch(e.target.value)}
-                className="w-full rounded-xl border border-slate-200 pl-10 pr-4 py-2 text-xs font-medium focus:border-purple-500 focus:outline-none"
+                className="w-full rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-900 dark:text-white placeholder-slate-400 dark:placeholder-slate-500 pl-10 pr-4 py-2 text-xs font-medium focus:border-purple-500 focus:outline-none"
               />
             </div>
 
@@ -304,16 +324,16 @@ export default function DeliveryTerminalPage() {
                   className={`rounded-xl px-3.5 py-1.5 text-xs font-bold whitespace-nowrap transition cursor-pointer ${
                     statusFilter === tab
                       ? 'bg-purple-600 text-white shadow-xs'
-                      : 'text-slate-600 hover:bg-slate-100'
+                      : 'text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800'
                   }`}
                 >
                   {tab === 'ALL'
-                    ? 'All Queue'
+                    ? (language === 'am' ? 'ሁሉም ዝርዝር' : 'All Queue')
                     : tab === 'VERIFIED'
-                    ? `Ready for Pickup (${readyCount})`
+                    ? (language === 'am' ? `ለርክክብ የተዘጋጁ (${readyCount})` : `Ready for Pickup (${readyCount})`)
                     : tab === 'DISPATCHED'
-                    ? `Out for Delivery (${inTransitCount})`
-                    : 'Delivered'}
+                    ? (language === 'am' ? `በማድረስ ላይ (${inTransitCount})` : `Out for Delivery (${inTransitCount})`)
+                    : (language === 'am' ? 'ደርሷል' : 'Delivered')}
                 </button>
               ))}
             </div>
@@ -325,11 +345,15 @@ export default function DeliveryTerminalPage() {
               <Loader2 className="h-8 w-8 animate-spin text-purple-600" />
             </div>
           ) : filteredOrders.length === 0 ? (
-            <div className="rounded-3xl border border-slate-200 bg-white p-12 text-center shadow-xs">
-              <Truck className="h-12 w-12 text-slate-300 mx-auto mb-3" />
-              <h4 className="text-base font-bold text-slate-800">No delivery orders in this queue</h4>
-              <p className="text-xs text-slate-500 mt-1 max-w-sm mx-auto">
-                Orders will appear here as soon as Store Admin or Co-Admin verifies the customer payment receipt.
+            <div className="rounded-3xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 p-12 text-center shadow-xs">
+              <Truck className="h-12 w-12 text-slate-300 dark:text-slate-600 mx-auto mb-3" />
+              <h4 className="text-base font-bold text-slate-800 dark:text-slate-200">
+                {language === 'am' ? 'በዚህ ዝርዝር ውስጥ ምንም ትዕዛዝ የለም' : 'No delivery orders in this queue'}
+              </h4>
+              <p className="text-xs text-slate-500 dark:text-slate-400 mt-1 max-w-sm mx-auto">
+                {language === 'am' 
+                  ? 'አስተዳዳሪው የክፍያ ደረሰኝ ሲያረጋግጥ ትዕዛዞች እዚህ ይታያሉ።' 
+                  : 'Orders will appear here as soon as Store Admin or Co-Admin verifies the customer payment receipt.'}
               </p>
             </div>
           ) : (
@@ -343,52 +367,52 @@ export default function DeliveryTerminalPage() {
                 return (
                   <div
                     key={order.id}
-                    className={`rounded-3xl border bg-white p-5 shadow-xs transition hover:shadow-md ${
+                    className={`rounded-3xl border p-5 shadow-xs transition hover:shadow-md ${
                       isReady
-                        ? 'border-emerald-300 bg-emerald-50/10'
+                        ? 'border-emerald-300 dark:border-emerald-800 bg-white dark:bg-slate-900'
                         : isDispatched
-                        ? 'border-purple-300 bg-purple-50/15'
-                        : 'border-slate-200/90'
+                        ? 'border-purple-300 dark:border-purple-800 bg-white dark:bg-slate-900'
+                        : 'border-slate-200/90 dark:border-slate-800 bg-white dark:bg-slate-900'
                     }`}
                   >
                     {/* Top Row: Order ID, Status, Amount */}
-                    <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-4 border-b border-slate-100">
+                    <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-4 border-b border-slate-100 dark:border-slate-800">
                       <div>
                         <div className="flex items-center space-x-2 mb-1">
-                          <span className="font-black text-base text-slate-900">
-                            Order #{order.id}
+                          <span className="font-black text-base text-slate-900 dark:text-white">
+                            {language === 'am' ? `ትዕዛዝ #${order.id}` : `Order #${order.id}`}
                           </span>
 
                           {isReady && (
-                            <span className="inline-flex items-center rounded-lg bg-emerald-100 text-emerald-800 border border-emerald-300 px-2.5 py-0.5 text-xs font-black uppercase">
-                              <ShieldCheck className="mr-1 h-3.5 w-3.5 text-emerald-600" />
-                              Ready for Pickup
+                            <span className="inline-flex items-center rounded-lg bg-emerald-100 dark:bg-emerald-950/70 text-emerald-800 dark:text-emerald-300 border border-emerald-300 dark:border-emerald-700 px-2.5 py-0.5 text-xs font-black uppercase">
+                              <ShieldCheck className="mr-1 h-3.5 w-3.5 text-emerald-600 dark:text-emerald-400" />
+                              {language === 'am' ? 'ለርክክብ ዝግጁ' : 'Ready for Pickup'}
                             </span>
                           )}
 
                           {isDispatched && (
-                            <span className="inline-flex items-center rounded-lg bg-purple-100 text-purple-800 border border-purple-300 px-2.5 py-0.5 text-xs font-black uppercase animate-pulse">
-                              <Truck className="mr-1 h-3.5 w-3.5 text-purple-600" />
-                              Out for Delivery
+                            <span className="inline-flex items-center rounded-lg bg-purple-100 dark:bg-purple-950/70 text-purple-800 dark:text-purple-300 border border-purple-300 dark:border-purple-700 px-2.5 py-0.5 text-xs font-black uppercase animate-pulse">
+                              <Truck className="mr-1 h-3.5 w-3.5 text-purple-600 dark:text-purple-400" />
+                              {language === 'am' ? 'በማድረስ ላይ' : 'Out for Delivery'}
                             </span>
                           )}
 
                           {isDelivered && (
-                            <span className="inline-flex items-center rounded-lg bg-emerald-50 text-emerald-700 border border-emerald-200 px-2.5 py-0.5 text-xs font-black uppercase">
+                            <span className="inline-flex items-center rounded-lg bg-emerald-50 dark:bg-emerald-950/40 text-emerald-700 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-800 px-2.5 py-0.5 text-xs font-black uppercase">
                               <CheckCircle2 className="mr-1 h-3.5 w-3.5" />
-                              Delivered
+                              {language === 'am' ? 'ደርሷል' : 'Delivered'}
                             </span>
                           )}
 
                           {order.customer_acknowledged && (
-                            <span className="inline-flex items-center rounded-lg bg-teal-50 text-teal-800 border border-teal-300 px-2.5 py-0.5 text-xs font-black uppercase">
-                              <CheckCircle2 className="mr-1 h-3.5 w-3.5 text-teal-600" />
-                              Customer Confirmed Receipt
+                            <span className="inline-flex items-center rounded-lg bg-teal-50 dark:bg-teal-950/50 text-teal-800 dark:text-teal-300 border border-teal-300 dark:border-teal-700 px-2.5 py-0.5 text-xs font-black uppercase">
+                              <CheckCircle2 className="mr-1 h-3.5 w-3.5 text-teal-600 dark:text-teal-400" />
+                              {language === 'am' ? 'ደንበኛው ርክክብ አረጋግጧል' : 'Customer Confirmed Receipt'}
                             </span>
                           )}
 
-                          <span className="text-xs text-slate-400">•</span>
-                          <span className="text-xs text-slate-500">
+                          <span className="text-xs text-slate-400 dark:text-slate-500">•</span>
+                          <span className="text-xs text-slate-500 dark:text-slate-400">
                             {new Date(order.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
                           </span>
                         </div>
@@ -396,19 +420,19 @@ export default function DeliveryTerminalPage() {
                         {/* Payment Verification Status Badge */}
                         <div className="flex items-center space-x-2 text-xs">
                           {isPrepaid ? (
-                            <span className="inline-flex items-center rounded-md bg-emerald-50 text-emerald-800 font-bold px-2 py-0.5 border border-emerald-200">
-                              <Check className="mr-1 h-3 w-3 text-emerald-600" />
-                              Prepaid via {order.payment_method} (Verified)
+                            <span className="inline-flex items-center rounded-md bg-emerald-50 dark:bg-emerald-950/40 text-emerald-800 dark:text-emerald-300 font-bold px-2 py-0.5 border border-emerald-200 dark:border-emerald-800">
+                              <Check className="mr-1 h-3 w-3 text-emerald-600 dark:text-emerald-400" />
+                              {language === 'am' ? `በ${order.payment_method} የተከፈለ (የተረጋገጠ)` : `Prepaid via ${order.payment_method} (Verified)`}
                             </span>
                           ) : (
-                            <span className="inline-flex items-center rounded-md bg-amber-50 text-amber-800 font-bold px-2 py-0.5 border border-amber-200">
-                              <DollarSign className="mr-1 h-3 w-3 text-amber-600" />
-                              Collect Cash on Delivery: {currencySymbol} {order.total_amount.toFixed(2)}
+                            <span className="inline-flex items-center rounded-md bg-amber-50 dark:bg-amber-950/40 text-amber-800 dark:text-amber-300 font-bold px-2 py-0.5 border border-amber-200 dark:border-amber-800">
+                              <DollarSign className="mr-1 h-3 w-3 text-amber-600 dark:text-amber-400" />
+                              {language === 'am' ? `ሲደርስ በጥሬ ገንዘብ የሚሰበሰብ: ${currencySymbol} ${order.total_amount.toFixed(2)}` : `Collect Cash on Delivery: ${currencySymbol} ${order.total_amount.toFixed(2)}`}
                             </span>
                           )}
 
                           {order.payment_ref && (
-                            <span className="font-mono text-[11px] text-slate-500 bg-slate-100 px-1.5 py-0.5 rounded">
+                            <span className="font-mono text-[11px] text-slate-500 dark:text-slate-400 bg-slate-100 dark:bg-slate-800 px-1.5 py-0.5 rounded">
                               Ref: {order.payment_ref}
                             </span>
                           )}
@@ -418,15 +442,17 @@ export default function DeliveryTerminalPage() {
                       {/* Right Total & Slip */}
                       <div className="flex items-center space-x-3 self-start sm:self-center">
                         <div className="text-right">
-                          <span className="text-[10px] text-slate-400 uppercase font-bold block">Order Value</span>
-                          <span className="text-xl font-black text-slate-900">
+                          <span className="text-[10px] text-slate-400 dark:text-slate-500 uppercase font-bold block">
+                            {language === 'am' ? 'የትዕዛዙ ዋጋ' : 'Order Value'}
+                          </span>
+                          <span className="text-xl font-black text-slate-900 dark:text-white">
                             {currencySymbol} {order.total_amount.toFixed(2)}
                           </span>
                         </div>
 
                         <button
                           onClick={() => handlePrintSlip(order)}
-                          className="rounded-xl border border-slate-200 bg-white p-2 text-slate-600 hover:bg-slate-50 transition shadow-xs cursor-pointer"
+                          className="rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 p-2 text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-700 transition shadow-xs cursor-pointer"
                           title="Print Delivery Manifest"
                         >
                           <Printer className="h-4 w-4" />
@@ -435,26 +461,26 @@ export default function DeliveryTerminalPage() {
                     </div>
 
                     {/* Middle: Customer Address & Direct Phone Dial */}
-                    <div className="py-4 grid grid-cols-1 md:grid-cols-2 gap-4 border-b border-slate-100">
-                      <div className="rounded-2xl bg-slate-50 p-3.5 border border-slate-200">
-                        <span className="text-[10px] font-black uppercase tracking-wider text-slate-400 block mb-1">
-                          Delivery Destination:
+                    <div className="py-4 grid grid-cols-1 md:grid-cols-2 gap-4 border-b border-slate-100 dark:border-slate-800">
+                      <div className="rounded-2xl bg-slate-50 dark:bg-slate-800/60 p-3.5 border border-slate-200 dark:border-slate-700">
+                        <span className="text-[10px] font-black uppercase tracking-wider text-slate-400 dark:text-slate-500 block mb-1">
+                          {language === 'am' ? 'የማድረሻ አድራሻ:' : 'Delivery Destination:'}
                         </span>
-                        <div className="flex items-start space-x-2 text-slate-900">
-                          <MapPin className="h-4 w-4 text-purple-600 mt-0.5 flex-shrink-0" />
+                        <div className="flex items-start space-x-2 text-slate-900 dark:text-slate-100">
+                          <MapPin className="h-4 w-4 text-purple-600 dark:text-purple-400 mt-0.5 flex-shrink-0" />
                           <div>
-                            <p className="text-sm font-bold">{order.customer_address || 'No address provided'}</p>
-                            <p className="text-xs text-slate-500 mt-0.5">{order.notes || 'No special directions'}</p>
+                            <p className="text-sm font-bold">{order.customer_address || (language === 'am' ? 'ምንም አድራሻ አልተሰጠም' : 'No address provided')}</p>
+                            <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">{order.notes || (language === 'am' ? 'ምንም ልዩ መመሪያ የለም' : 'No special directions')}</p>
                           </div>
                         </div>
                       </div>
 
-                      <div className="rounded-2xl bg-slate-50 p-3.5 border border-slate-200 flex flex-col justify-between">
+                      <div className="rounded-2xl bg-slate-50 dark:bg-slate-800/60 p-3.5 border border-slate-200 dark:border-slate-700 flex flex-col justify-between">
                         <div>
-                          <span className="text-[10px] font-black uppercase tracking-wider text-slate-400 block mb-1">
-                            Customer Contact:
+                          <span className="text-[10px] font-black uppercase tracking-wider text-slate-400 dark:text-slate-500 block mb-1">
+                            {language === 'am' ? 'የደንበኛ መረጃ:' : 'Customer Contact:'}
                           </span>
-                          <p className="text-sm font-bold text-slate-900">{order.customer_name}</p>
+                          <p className="text-sm font-bold text-slate-900 dark:text-white">{order.customer_name}</p>
                         </div>
 
                         {order.customer_phone && (
@@ -464,7 +490,7 @@ export default function DeliveryTerminalPage() {
                               className="inline-flex items-center rounded-xl bg-emerald-600 px-3.5 py-1.5 text-xs font-bold text-white shadow-xs hover:bg-emerald-500 transition"
                             >
                               <Phone className="mr-1.5 h-3.5 w-3.5" />
-                              Call Customer ({order.customer_phone})
+                              {language === 'am' ? `ለደንበኛው ይደውሉ (${order.customer_phone})` : `Call Customer (${order.customer_phone})`}
                             </a>
                           </div>
                         )}
@@ -475,16 +501,16 @@ export default function DeliveryTerminalPage() {
                     <div className="pt-4 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
                       {/* Items */}
                       <div className="flex-1">
-                        <span className="text-[10px] font-black uppercase tracking-wider text-slate-400 block mb-1">
-                          Items to Handover ({order.items.reduce((sum, i) => sum + i.quantity, 0)} units):
+                        <span className="text-[10px] font-black uppercase tracking-wider text-slate-400 dark:text-slate-500 block mb-1">
+                          {language === 'am' ? `የሚረከቡ ዕቃዎች (${order.items.reduce((sum, i) => sum + i.quantity, 0)} ፍሬ):` : `Items to Handover (${order.items.reduce((sum, i) => sum + i.quantity, 0)} units):`}
                         </span>
                         <div className="flex flex-wrap gap-1.5">
                           {order.items.map((i) => (
                             <span
                               key={i.id}
-                              className="inline-flex items-center rounded-lg bg-slate-100 px-2.5 py-1 text-xs font-semibold text-slate-800"
+                              className="inline-flex items-center rounded-lg bg-slate-100 dark:bg-slate-800 px-2.5 py-1 text-xs font-semibold text-slate-800 dark:text-slate-200"
                             >
-                              <span className="text-purple-700 font-bold mr-1">{i.quantity}x</span>
+                              <span className="text-purple-700 dark:text-purple-400 font-bold mr-1">{i.quantity}x</span>
                               {i.product_name}
                             </span>
                           ))}
@@ -504,7 +530,7 @@ export default function DeliveryTerminalPage() {
                             ) : (
                               <Truck className="mr-2 h-4 w-4" />
                             )}
-                            Start Delivery / Mark Picked Up
+                            {language === 'am' ? 'ማድረስ ጀምር / ተረክቤያለሁ' : 'Start Delivery / Mark Picked Up'}
                           </button>
                         )}
 
@@ -515,24 +541,24 @@ export default function DeliveryTerminalPage() {
                             className="w-full sm:w-auto inline-flex items-center justify-center rounded-2xl bg-emerald-600 px-5 py-3 text-xs font-bold text-white shadow-md shadow-emerald-600/20 hover:bg-emerald-500 transition cursor-pointer"
                           >
                             <CheckCircle2 className="mr-2 h-4 w-4" />
-                            Complete Delivery / Handover
+                            {language === 'am' ? 'ማድረስ አጠናቅቅ / አስረክብ' : 'Complete Delivery / Handover'}
                           </button>
                         )}
 
                         {isDelivered && (
                           <div className="flex flex-col sm:flex-row items-end sm:items-center gap-2">
-                            <span className="inline-flex items-center text-xs font-bold text-emerald-700">
-                              <CheckCircle2 className="mr-1.5 h-4 w-4 text-emerald-600" />
-                              Delivered
+                            <span className="inline-flex items-center text-xs font-bold text-emerald-700 dark:text-emerald-400">
+                              <CheckCircle2 className="mr-1.5 h-4 w-4 text-emerald-600 dark:text-emerald-400" />
+                              {language === 'am' ? 'ደርሷል' : 'Delivered'}
                             </span>
 
                             {order.delivery_proof_image && (
                               <button
                                 onClick={() => setViewingProof(order)}
-                                className="inline-flex items-center rounded-xl border border-teal-200 bg-teal-50 px-3 py-1.5 text-xs font-bold text-teal-800 hover:bg-teal-100 transition shadow-xs cursor-pointer"
+                                className="inline-flex items-center rounded-xl border border-teal-200 dark:border-teal-800 bg-teal-50 dark:bg-teal-950/50 px-3 py-1.5 text-xs font-bold text-teal-800 dark:text-teal-300 hover:bg-teal-100 dark:hover:bg-teal-900 transition shadow-xs cursor-pointer"
                               >
-                                <Camera className="mr-1.5 h-3.5 w-3.5 text-teal-600" />
-                                Customer Proof
+                                <Camera className="mr-1.5 h-3.5 w-3.5 text-teal-600 dark:text-teal-400" />
+                                {language === 'am' ? 'የደንበኛ ማረጋገጫ' : 'Customer Proof'}
                               </button>
                             )}
                           </div>
@@ -550,51 +576,51 @@ export default function DeliveryTerminalPage() {
       {/* Complete Delivery Modal */}
       {completingOrder && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-xs">
-          <div className="bg-white rounded-3xl p-6 max-w-md w-full shadow-2xl border border-slate-200">
-            <div className="h-14 w-14 rounded-2xl bg-emerald-100 text-emerald-600 flex items-center justify-center mx-auto mb-3">
+          <div className="bg-white dark:bg-slate-900 rounded-3xl p-6 max-w-md w-full shadow-2xl border border-slate-200 dark:border-slate-800 text-slate-900 dark:text-slate-100">
+            <div className="h-14 w-14 rounded-2xl bg-emerald-100 dark:bg-emerald-950/70 text-emerald-600 dark:text-emerald-400 flex items-center justify-center mx-auto mb-3">
               <CheckCircle2 className="h-8 w-8" />
             </div>
 
-            <h3 className="text-xl font-black text-slate-900 text-center">
-              Confirm Delivery for Order #{completingOrder.id}
+            <h3 className="text-xl font-black text-slate-900 dark:text-white text-center">
+              {language === 'am' ? `የትዕዛዝ #${completingOrder.id} ርክክብ አረጋግጥ` : `Confirm Delivery for Order #${completingOrder.id}`}
             </h3>
 
-            <p className="text-xs text-slate-500 text-center mt-1">
-              Confirm that items were safely handed to {completingOrder.customer_name}.
+            <p className="text-xs text-slate-500 dark:text-slate-400 text-center mt-1">
+              {language === 'am' ? `ዕቃዎቹ ለ${completingOrder.customer_name} በሰላም መድረሳቸውን ያረጋግጡ።` : `Confirm that items were safely handed to ${completingOrder.customer_name}.`}
             </p>
 
-            <div className="mt-4 p-3 rounded-2xl bg-slate-50 border border-slate-200 text-xs space-y-1.5">
+            <div className="mt-4 p-3 rounded-2xl bg-slate-50 dark:bg-slate-800/60 border border-slate-200 dark:border-slate-700 text-xs space-y-1.5">
               <div className="flex justify-between">
-                <span className="text-slate-500">Destination:</span>
-                <span className="font-bold text-slate-800">{completingOrder.customer_address}</span>
+                <span className="text-slate-500 dark:text-slate-400">{language === 'am' ? 'መድረሻ:' : 'Destination:'}</span>
+                <span className="font-bold text-slate-800 dark:text-slate-200">{completingOrder.customer_address}</span>
               </div>
               <div className="flex justify-between">
-                <span className="text-slate-500">Total Collected:</span>
-                <span className="font-bold text-emerald-700">
+                <span className="text-slate-500 dark:text-slate-400">{language === 'am' ? 'የተሰበሰበ ጠቅላላ:' : 'Total Collected:'}</span>
+                <span className="font-bold text-emerald-700 dark:text-emerald-400">
                   {currencySymbol} {completingOrder.total_amount.toFixed(2)} ({completingOrder.payment_method})
                 </span>
               </div>
             </div>
 
             <div className="mt-4">
-              <label className="block text-[11px] font-bold uppercase text-slate-600 mb-1">
-                Delivery Notes / Handover Remarks (Optional)
+              <label className="block text-[11px] font-bold uppercase text-slate-600 dark:text-slate-300 mb-1">
+                {language === 'am' ? 'የማድረሻ ማስታወሻ / አስተያየት (አማራጭ)' : 'Delivery Notes / Handover Remarks (Optional)'}
               </label>
               <input
                 type="text"
-                placeholder="e.g. Handed to customer at door, payment confirmed"
+                placeholder={language === 'am' ? 'ምሳሌ፡ ለደንበኛው በእጅ ተሰጥቷል፣ ክፍያ ተረጋግጧል' : 'e.g. Handed to customer at door, payment confirmed'}
                 value={deliveryNote}
                 onChange={(e) => setDeliveryNote(e.target.value)}
-                className="w-full rounded-xl border border-slate-200 p-2.5 text-xs focus:border-emerald-500 focus:outline-none"
+                className="w-full rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-900 dark:text-white placeholder-slate-400 dark:placeholder-slate-500 p-2.5 text-xs focus:border-emerald-500 focus:outline-none"
               />
             </div>
 
             <div className="mt-5 flex items-center justify-end space-x-2.5">
               <button
                 onClick={() => setCompletingOrder(null)}
-                className="rounded-xl border border-slate-200 px-4 py-2.5 text-xs font-bold text-slate-600 hover:bg-slate-50 transition cursor-pointer"
+                className="rounded-xl border border-slate-200 dark:border-slate-700 px-4 py-2.5 text-xs font-bold text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800 transition cursor-pointer"
               >
-                Cancel
+                {t('btn_cancel', 'Cancel')}
               </button>
 
               <button
@@ -607,7 +633,7 @@ export default function DeliveryTerminalPage() {
                 ) : (
                   <CheckCircle2 className="mr-1.5 h-3.5 w-3.5" />
                 )}
-                Confirm Delivery
+                {language === 'am' ? 'ርክክብ አረጋግጥ' : 'Confirm Delivery'}
               </button>
             </div>
           </div>
@@ -617,25 +643,25 @@ export default function DeliveryTerminalPage() {
       {/* Customer Delivery Proof Modal */}
       {viewingProof && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/70 backdrop-blur-xs">
-          <div className="bg-white rounded-3xl max-w-xl w-full max-h-[90vh] flex flex-col shadow-2xl border border-slate-200 overflow-hidden animate-in fade-in zoom-in-95 duration-200">
-            <div className="p-5 border-b border-slate-100 flex items-center justify-between bg-teal-50/60">
+          <div className="bg-white dark:bg-slate-900 rounded-3xl max-w-xl w-full max-h-[90vh] flex flex-col shadow-2xl border border-slate-200 dark:border-slate-800 overflow-hidden animate-in fade-in zoom-in-95 duration-200">
+            <div className="p-5 border-b border-slate-100 dark:border-slate-800 flex items-center justify-between bg-teal-50/60 dark:bg-teal-950/30">
               <div className="flex items-center space-x-2.5">
                 <div className="h-10 w-10 rounded-xl bg-teal-600 text-white flex items-center justify-center shadow-md shadow-teal-600/20">
                   <Camera className="h-5 w-5" />
                 </div>
                 <div>
-                  <h3 className="text-base font-black text-slate-900 leading-tight">
-                    Customer Delivery Confirmation — Order #{viewingProof.id}
+                  <h3 className="text-base font-black text-slate-900 dark:text-white leading-tight">
+                    {language === 'am' ? `የደንበኛ የማድረሻ ማረጋገጫ — ትዕዛዝ #${viewingProof.id}` : `Customer Delivery Confirmation — Order #${viewingProof.id}`}
                   </h3>
-                  <p className="text-xs text-slate-500">
-                    Received by {viewingProof.customer_name}
+                  <p className="text-xs text-slate-500 dark:text-slate-400">
+                    {language === 'am' ? 'የተረከበው' : 'Received by'} {viewingProof.customer_name}
                   </p>
                 </div>
               </div>
 
               <button
                 onClick={() => setViewingProof(null)}
-                className="rounded-xl p-1.5 text-slate-400 hover:bg-slate-200/60 hover:text-slate-700 transition cursor-pointer"
+                className="rounded-xl p-1.5 text-slate-400 hover:bg-slate-200/60 dark:hover:bg-slate-800 hover:text-slate-700 dark:hover:text-slate-200 transition cursor-pointer"
               >
                 <X className="h-5 w-5" />
               </button>
@@ -643,18 +669,18 @@ export default function DeliveryTerminalPage() {
 
             <div className="flex-1 overflow-y-auto p-5 space-y-4">
               {viewingProof.customer_feedback && (
-                <div className="rounded-2xl border border-teal-200 bg-teal-50/40 p-3.5 text-xs">
-                  <span className="font-black uppercase text-teal-800 text-[10px] block mb-1">
-                    Customer Remarks:
+                <div className="rounded-2xl border border-teal-200 dark:border-teal-800 bg-teal-50/40 dark:bg-teal-950/40 p-3.5 text-xs">
+                  <span className="font-black uppercase text-teal-800 dark:text-teal-300 text-[10px] block mb-1">
+                    {language === 'am' ? 'የደንበኛ አስተያየት:' : 'Customer Remarks:'}
                   </span>
-                  <p className="text-slate-700 font-medium italic">
+                  <p className="text-slate-700 dark:text-slate-300 font-medium italic">
                     "{viewingProof.customer_feedback}"
                   </p>
                 </div>
               )}
 
               {viewingProof.delivery_proof_image ? (
-                <div className="relative rounded-2xl border border-slate-200 bg-slate-900/5 p-2 text-center overflow-hidden">
+                <div className="relative rounded-2xl border border-slate-200 dark:border-slate-800 bg-slate-900/5 dark:bg-slate-950 p-2 text-center overflow-hidden">
                   <img
                     src={viewingProof.delivery_proof_image}
                     alt="Customer Delivery Proof"
@@ -666,30 +692,30 @@ export default function DeliveryTerminalPage() {
                         const w = window.open('');
                         w?.document.write(`<img src="${viewingProof.delivery_proof_image}" style="max-width:100%"/>`);
                       }}
-                      className="inline-flex items-center text-xs font-bold text-teal-700 hover:underline cursor-pointer"
+                      className="inline-flex items-center text-xs font-bold text-teal-700 dark:text-teal-400 hover:underline cursor-pointer"
                     >
                       <ExternalLink className="mr-1 h-3.5 w-3.5" />
-                      Open Full Size
+                      {language === 'am' ? 'በትልቅ እይታ ክፈት' : 'Open Full Size'}
                     </button>
                   </div>
                 </div>
               ) : (
-                <div className="rounded-2xl border border-dashed border-slate-200 p-8 text-center text-slate-400 text-xs">
-                  Customer confirmed arrival digitally.
+                <div className="rounded-2xl border border-dashed border-slate-200 dark:border-slate-800 p-8 text-center text-slate-400 text-xs">
+                  {language === 'am' ? 'ደንበኛው በዲጂታል መንገድ መድረሱን አረጋግጧል።' : 'Customer confirmed arrival digitally.'}
                 </div>
               )}
             </div>
 
-            <div className="p-4 border-t border-slate-100 bg-slate-50 flex items-center justify-between">
-              <span className="text-xs text-emerald-700 font-bold flex items-center">
+            <div className="p-4 border-t border-slate-100 dark:border-slate-800 bg-slate-50 dark:bg-slate-800/50 flex items-center justify-between">
+              <span className="text-xs text-emerald-700 dark:text-emerald-400 font-bold flex items-center">
                 <CheckCircle2 className="mr-1 h-3.5 w-3.5" />
-                Receipt Verified by Customer
+                {language === 'am' ? 'በደንበኛው ርክክብ ተረጋግጧል' : 'Receipt Verified by Customer'}
               </span>
               <button
                 onClick={() => setViewingProof(null)}
-                className="rounded-xl border border-slate-200 bg-white px-5 py-2 text-xs font-bold text-slate-700 hover:bg-slate-50 transition cursor-pointer"
+                className="rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 px-5 py-2 text-xs font-bold text-slate-700 dark:text-slate-200 hover:bg-slate-50 dark:hover:bg-slate-700 transition cursor-pointer"
               >
-                Close
+                {t('btn_close', 'Close')}
               </button>
             </div>
           </div>
