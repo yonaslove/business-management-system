@@ -18,6 +18,7 @@ import {
   Truck
 } from 'lucide-react';
 import { useAuth } from '@/lib/auth';
+import { useLanguage } from '@/lib/language';
 
 interface SidebarProps {
   isOpen: boolean;
@@ -27,31 +28,32 @@ interface SidebarProps {
 export const Sidebar: React.FC<SidebarProps> = ({ isOpen, onClose }) => {
   const pathname = usePathname();
   const { user, logout } = useAuth();
+  const { t } = useLanguage();
 
   let navigation = [];
   if (user?.role === 'delivery') {
     navigation = [
-      { name: 'Delivery Hub', href: '/delivery', icon: Truck },
+      { name: t('nav_delivery', 'Delivery Hub'), href: '/delivery', icon: Truck },
     ];
   } else if (user?.role === 'employee') {
     navigation = [
-      { name: 'Staff Workspace', href: '/employee', icon: LayoutDashboard },
-      { name: 'Sales & POS', href: '/sales', icon: ShoppingCart },
-      { name: 'Products & Stock', href: '/products', icon: Package },
-      { name: 'Customers', href: '/customers', icon: Users },
+      { name: t('nav_dashboard', 'Staff Workspace'), href: '/employee', icon: LayoutDashboard },
+      { name: t('nav_sales', 'Sales & POS'), href: '/sales', icon: ShoppingCart },
+      { name: t('nav_products', 'Products & Stock'), href: '/products', icon: Package },
+      { name: t('nav_customers', 'Customers'), href: '/customers', icon: Users },
     ];
   } else {
     // Admin & Co-Admin
     navigation = [
-      { name: 'Dashboard', href: '/dashboard', icon: LayoutDashboard },
-      { name: 'Products & Stock', href: '/products', icon: Package },
-      { name: 'Customers', href: '/customers', icon: Users },
-      { name: 'Sales & POS', href: '/sales', icon: ShoppingCart },
-      { name: 'Online Orders', href: '/orders', icon: ShoppingBag },
-      { name: 'Delivery Hub', href: '/delivery', icon: Truck },
-      { name: 'Staff Workspace', href: '/employee', icon: UserCheck },
-      { name: 'Admin & Reports', href: '/admin', icon: ShieldCheck },
-      { name: 'Settings', href: '/settings', icon: Settings },
+      { name: t('nav_dashboard', 'Dashboard'), href: '/dashboard', icon: LayoutDashboard },
+      { name: t('nav_products', 'Products & Stock'), href: '/products', icon: Package },
+      { name: t('nav_customers', 'Customers'), href: '/customers', icon: Users },
+      { name: t('nav_sales', 'Sales & POS'), href: '/sales', icon: ShoppingCart },
+      { name: t('nav_orders', 'Online Orders'), href: '/orders', icon: ShoppingBag },
+      { name: t('nav_delivery', 'Delivery Hub'), href: '/delivery', icon: Truck },
+      { name: t('nav_employees', 'Staff Workspace'), href: '/employee', icon: UserCheck },
+      { name: t('nav_admin', 'Admin & Reports'), href: '/admin', icon: ShieldCheck },
+      { name: t('nav_settings', 'Settings'), href: '/settings', icon: Settings },
     ];
   }
 

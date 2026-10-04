@@ -20,10 +20,15 @@ import {
   CheckCheck,
   X,
   Truck,
-  ShoppingBag
+  ShoppingBag,
+  Sun,
+  Moon,
+  Globe
 } from 'lucide-react';
 import { useAuth } from '@/lib/auth';
 import { apiRequest } from '@/lib/api';
+import { useTheme } from '@/lib/theme';
+import { useLanguage } from '@/lib/language';
 import { AdminNotificationSummary, ActivityLog } from '@/types';
 
 interface HeaderProps {
@@ -33,6 +38,8 @@ interface HeaderProps {
 
 export const Header: React.FC<HeaderProps> = ({ onMenuClick, title }) => {
   const { user, logout } = useAuth();
+  const { theme, toggleTheme } = useTheme();
+  const { language, toggleLanguage, t } = useLanguage();
   const isAdmin = user?.role === 'admin';
   const isCoAdmin = user?.role === 'co_admin';
   const isDelivery = user?.role === 'delivery';
@@ -306,25 +313,48 @@ export const Header: React.FC<HeaderProps> = ({ onMenuClick, title }) => {
 
 
   return (
-    <header className="sticky top-0 z-30 flex h-16 w-full items-center justify-between border-b border-slate-200 bg-white/80 px-6 backdrop-blur-md">
-      <div className="flex items-center space-x-4">
+    <header className="sticky top-0 z-30 flex h-16 w-full items-center justify-between border-b border-slate-200 dark:border-slate-800 bg-white/80 dark:bg-slate-900/80 px-4 sm:px-6 backdrop-blur-md transition-colors">
+      <div className="flex items-center space-x-3 sm:space-x-4">
         <button
           onClick={onMenuClick}
-          className="rounded-lg p-2 text-slate-500 hover:bg-slate-100 hover:text-slate-700 lg:hidden"
+          className="rounded-lg p-2 text-slate-500 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 hover:text-slate-700 dark:hover:text-slate-200 lg:hidden"
         >
           <Menu className="h-6 w-6" />
         </button>
         <div>
-          <h1 className="text-xl font-bold tracking-tight text-slate-800">{title}</h1>
+          <h1 className="text-xl font-bold tracking-tight text-slate-800 dark:text-slate-100">{title}</h1>
         </div>
       </div>
 
-      <div className="flex items-center space-x-3 sm:space-x-4">
+      <div className="flex items-center space-x-2 sm:space-x-3">
         {/* Dynamic Currency badge */}
-        <div className="hidden sm:flex items-center rounded-full bg-emerald-50 px-3 py-1 text-xs font-semibold text-emerald-700 border border-emerald-200 shadow-xs">
+        <div className="hidden md:flex items-center rounded-full bg-emerald-50 dark:bg-emerald-950/60 px-3 py-1 text-xs font-semibold text-emerald-700 dark:text-emerald-400 border border-emerald-200 dark:border-emerald-800 shadow-xs">
           <span className="mr-1.5 h-2 w-2 rounded-full bg-emerald-500 animate-pulse"></span>
-          Currency: {user?.currency || 'ETB'} ({user?.currency_symbol || 'Br'})
+          {t('label_currency', 'Currency')}: {user?.currency || 'ETB'} ({user?.currency_symbol || 'Br'})
         </div>
+
+        {/* Dual Language Switcher (EN / አማ) */}
+        <button
+          onClick={toggleLanguage}
+          className="inline-flex items-center space-x-1.5 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 px-2.5 py-1.5 text-xs font-bold text-slate-700 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-700 transition cursor-pointer shadow-2xs"
+          title={language === 'en' ? "Switch to Amharic (ወደ አማርኛ ቀይር)" : "Switch to English"}
+        >
+          <Globe className="h-3.5 w-3.5 text-emerald-600 dark:text-emerald-400" />
+          <span className="font-semibold">{language === 'en' ? '🇬🇧 EN' : '🇪🇹 አማ'}</span>
+        </button>
+
+        {/* Theme Switcher (Light / Dark) */}
+        <button
+          onClick={toggleTheme}
+          className="inline-flex items-center justify-center p-2 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-600 dark:text-amber-400 hover:bg-slate-100 dark:hover:bg-slate-700 transition cursor-pointer shadow-2xs"
+          title={theme === 'dark' ? "Switch to Light Mode" : "Switch to Dark Mode"}
+        >
+          {theme === 'dark' ? (
+            <Sun className="h-4 w-4 text-amber-400" />
+          ) : (
+            <Moon className="h-4 w-4 text-slate-600" />
+          )}
+        </button>
 
         {/* ========================================================================= */}
         {/* NOTIFICATIONS BELL: Numbers removed when seen, list removed once seen */}

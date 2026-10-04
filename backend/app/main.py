@@ -4,7 +4,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from app.core.config import settings
 from app.database.session import engine, Base
 from app.models import *  # Import all models to ensure metadata registration
-from app.routers import auth, products, customers, sales, dashboard, admin, settings as settings_router, public_store
+from app.routers import auth, products, customers, sales, dashboard, admin, settings as settings_router, public_store, translations
 
 
 @asynccontextmanager
@@ -87,6 +87,7 @@ app.include_router(dashboard.router, prefix=settings.API_V1_STR)
 app.include_router(admin.router, prefix=settings.API_V1_STR)
 app.include_router(settings_router.router, prefix=settings.API_V1_STR)
 app.include_router(public_store.router, prefix=settings.API_V1_STR)
+app.include_router(translations.router, prefix=settings.API_V1_STR)
 
 
 @app.get("/health", tags=["Health"])

@@ -37,10 +37,15 @@ import {
   ExternalLink,
   Copy,
   Smartphone,
-  Building2
+  Building2,
+  Sun,
+  Moon,
+  Globe
 } from 'lucide-react';
 import { apiRequest } from '@/lib/api';
 import { useAuth } from '@/lib/auth';
+import { useTheme } from '@/lib/theme';
+import { useLanguage } from '@/lib/language';
 import { CustomerUser, Sale } from '@/types';
 
 interface PublicProduct {
@@ -86,6 +91,8 @@ interface CartItem {
 
 function ShopContent() {
   const { user } = useAuth();
+  const { theme, toggleTheme } = useTheme();
+  const { language, toggleLanguage, t } = useLanguage();
   const searchParams = useSearchParams();
   const storeParam = searchParams.get('store') || searchParams.get('business_id');
 
@@ -518,25 +525,47 @@ function ShopContent() {
   // The online order products and catalog are only visible after customer signs in.
   if (!customerUser) {
     return (
-      <div className="min-h-screen bg-slate-50 text-slate-900 flex flex-col justify-between font-sans selection:bg-emerald-600 selection:text-white">
+      <div className="min-h-screen bg-slate-50 dark:bg-slate-950 text-slate-900 dark:text-slate-100 flex flex-col justify-between font-sans selection:bg-emerald-600 selection:text-white transition-colors duration-200">
         {/* Top Header */}
-        <header className="border-b border-slate-200/90 bg-white/95 backdrop-blur-md sticky top-0 z-40 shadow-xs">
+        <header className="border-b border-slate-200/90 dark:border-slate-800 bg-white/95 dark:bg-slate-900/95 backdrop-blur-md sticky top-0 z-40 shadow-xs">
           <div className="max-w-6xl mx-auto px-4 sm:px-6 h-20 flex items-center justify-between">
             <Link href="/" className="flex items-center space-x-3 group">
               <div className="h-11 w-11 rounded-2xl bg-emerald-600 flex items-center justify-center text-white shadow-md shadow-emerald-600/25 group-hover:bg-emerald-500 transition">
                 <ShoppingBag className="h-6 w-6" />
               </div>
               <div>
-                <span className="text-xl font-black tracking-tight text-slate-900 block leading-tight">
+                <span className="text-xl font-black tracking-tight text-slate-900 dark:text-slate-100 block leading-tight">
                   {storeName}
                 </span>
-                <span className="text-[11px] text-emerald-700 font-bold uppercase tracking-wider block">
-                  Customer Online Portal
+                <span className="text-[11px] text-emerald-700 dark:text-emerald-400 font-bold uppercase tracking-wider block">
+                  {t('shop_title', 'Customer Online Portal')}
                 </span>
               </div>
             </Link>
 
-            <div className="flex items-center space-x-3">
+            <div className="flex items-center space-x-2 sm:space-x-3">
+              {/* Dual Language Switcher */}
+              <button
+                onClick={toggleLanguage}
+                className="inline-flex items-center space-x-1.5 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 px-2.5 py-1.5 text-xs font-bold text-slate-700 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-700 transition cursor-pointer shadow-2xs"
+                title={language === 'en' ? "ወደ አማርኛ ቀይር" : "Switch to English"}
+              >
+                <Globe className="h-3.5 w-3.5 text-emerald-600 dark:text-emerald-400" />
+                <span>{language === 'en' ? '🇬🇧 EN' : '🇪🇹 አማ'}</span>
+              </button>
+
+              {/* Theme Switcher */}
+              <button
+                onClick={toggleTheme}
+                className="inline-flex items-center justify-center p-2 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-600 dark:text-amber-400 hover:bg-slate-100 dark:hover:bg-slate-700 transition cursor-pointer shadow-2xs"
+                title={theme === 'dark' ? "Light Mode" : "Dark Mode"}
+              >
+                {theme === 'dark' ? (
+                  <Sun className="h-4 w-4 text-amber-400" />
+                ) : (
+                  <Moon className="h-4 w-4 text-slate-600" />
+                )}
+              </button>
               {user ? (
                 <Link
                   href="/dashboard"
@@ -819,33 +848,56 @@ function ShopContent() {
   }
 
   return (
-    <div className="min-h-screen bg-slate-50 text-slate-900 selection:bg-emerald-600 selection:text-white font-sans">
+    <div className="min-h-screen bg-slate-50 dark:bg-slate-950 text-slate-900 dark:text-slate-100 selection:bg-emerald-600 selection:text-white font-sans transition-colors duration-200">
       {/* Top Header */}
-      <header className="border-b border-slate-200/90 bg-white/95 backdrop-blur-md sticky top-0 z-40 shadow-xs">
+      <header className="border-b border-slate-200/90 dark:border-slate-800 bg-white/95 dark:bg-slate-900/95 backdrop-blur-md sticky top-0 z-40 shadow-xs">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 h-20 flex items-center justify-between">
           <Link href="/" className="flex items-center space-x-3 group">
             <div className="h-11 w-11 rounded-2xl bg-emerald-600 flex items-center justify-center text-white shadow-md shadow-emerald-600/25 group-hover:bg-emerald-500 transition">
               <ShoppingBag className="h-6 w-6" />
             </div>
             <div>
-              <span className="text-xl font-black tracking-tight text-slate-900 block leading-tight">
+              <span className="text-xl font-black tracking-tight text-slate-900 dark:text-slate-100 block leading-tight">
                 {storeName}
               </span>
-              <span className="text-[11px] text-emerald-700 font-bold uppercase tracking-wider block">
-                Online Shopping Storefront
+              <span className="text-[11px] text-emerald-700 dark:text-emerald-400 font-bold uppercase tracking-wider block">
+                {t('shop_title', 'Online Shopping Storefront')}
               </span>
             </div>
           </Link>
 
-          <div className="flex items-center space-x-2.5 sm:space-x-3">
+          <div className="flex items-center space-x-2 sm:space-x-2.5">
+            {/* Dual Language Switcher */}
+            <button
+              onClick={toggleLanguage}
+              className="inline-flex items-center space-x-1.5 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 px-2.5 py-2 text-xs font-bold text-slate-700 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-700 transition cursor-pointer shadow-2xs"
+              title={language === 'en' ? "ወደ አማርኛ ቀይር" : "Switch to English"}
+            >
+              <Globe className="h-3.5 w-3.5 text-emerald-600 dark:text-emerald-400" />
+              <span>{language === 'en' ? '🇬🇧 EN' : '🇪🇹 አማ'}</span>
+            </button>
+
+            {/* Theme Switcher */}
+            <button
+              onClick={toggleTheme}
+              className="inline-flex items-center justify-center p-2 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-600 dark:text-amber-400 hover:bg-slate-100 dark:hover:bg-slate-700 transition cursor-pointer shadow-2xs"
+              title={theme === 'dark' ? "Light Mode" : "Dark Mode"}
+            >
+              {theme === 'dark' ? (
+                <Sun className="h-4 w-4 text-amber-400" />
+              ) : (
+                <Moon className="h-4 w-4 text-slate-600" />
+              )}
+            </button>
+
             {/* Store Payment Details Button */}
             <button
               onClick={() => setIsPaymentAccountsOpen(true)}
-              className="inline-flex items-center space-x-1.5 rounded-xl border border-emerald-200 bg-emerald-50/70 px-3 py-2 text-xs font-bold text-emerald-900 hover:bg-emerald-100 transition shadow-xs cursor-pointer"
+              className="inline-flex items-center space-x-1.5 rounded-xl border border-emerald-200 dark:border-emerald-800 bg-emerald-50/70 dark:bg-emerald-950/50 px-3 py-2 text-xs font-bold text-emerald-900 dark:text-emerald-300 hover:bg-emerald-100 dark:hover:bg-emerald-900/60 transition shadow-xs cursor-pointer"
               title="View Telebirr and bank accounts for online transfer"
             >
-              <CreditCard className="h-3.5 w-3.5 text-emerald-700" />
-              <span className="hidden sm:inline">Payment Accounts</span>
+              <CreditCard className="h-3.5 w-3.5 text-emerald-700 dark:text-emerald-400" />
+              <span className="hidden sm:inline">{t('nav_payment_accounts', 'Payment Accounts')}</span>
               <span className="sm:hidden">Pay Info</span>
             </button>
 
@@ -855,24 +907,24 @@ function ShopContent() {
                 setIsMyOrdersOpen(true);
                 loadMyOrders();
               }}
-              className="inline-flex items-center space-x-1.5 rounded-xl border border-slate-200 bg-white px-3 py-2 text-xs font-bold text-slate-700 hover:bg-slate-50 transition shadow-xs cursor-pointer"
+              className="inline-flex items-center space-x-1.5 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 px-3 py-2 text-xs font-bold text-slate-700 dark:text-slate-200 hover:bg-slate-50 dark:hover:bg-slate-700 transition shadow-xs cursor-pointer"
             >
-              <History className="h-3.5 w-3.5 text-emerald-600" />
-              <span>Track Orders</span>
+              <History className="h-3.5 w-3.5 text-emerald-600 dark:text-emerald-400" />
+              <span>{t('nav_track_orders', 'Track Orders')}</span>
             </button>
 
             {/* Customer Account Button */}
-            <div className="inline-flex items-center space-x-2 rounded-xl bg-emerald-50 border border-emerald-200 px-3 py-1.5 text-xs font-bold text-emerald-900">
+            <div className="inline-flex items-center space-x-2 rounded-xl bg-emerald-50 dark:bg-emerald-950/60 border border-emerald-200 dark:border-emerald-800 px-3 py-1.5 text-xs font-bold text-emerald-900 dark:text-emerald-300">
               <span className="h-2 w-2 rounded-full bg-emerald-500 animate-pulse"></span>
-              <UserIcon className="h-3.5 w-3.5 text-emerald-600" />
+              <UserIcon className="h-3.5 w-3.5 text-emerald-600 dark:text-emerald-400" />
               <span className="truncate max-w-[120px]">{customerUser.name}</span>
               <button
                 onClick={handleCustomerLogout}
                 title="Sign out of customer account"
-                className="text-slate-400 hover:text-red-600 ml-1.5 p-1 rounded-lg hover:bg-red-50 transition flex items-center space-x-1 cursor-pointer"
+                className="text-slate-400 hover:text-red-600 ml-1.5 p-1 rounded-lg hover:bg-red-50 dark:hover:bg-red-950/50 transition flex items-center space-x-1 cursor-pointer"
               >
                 <LogOut className="h-3.5 w-3.5" />
-                <span className="text-[10px]">Sign Out</span>
+                <span className="text-[10px]">{t('btn_sign_out', 'Sign Out')}</span>
               </button>
             </div>
 
@@ -882,7 +934,7 @@ function ShopContent() {
               className="relative inline-flex items-center space-x-2 rounded-xl bg-emerald-600 px-3.5 sm:px-4 py-2 text-xs font-bold text-white shadow-md shadow-emerald-600/20 hover:bg-emerald-500 transition cursor-pointer"
             >
               <ShoppingCart className="h-4 w-4" />
-              <span>Cart</span>
+              <span>{t('nav_cart', 'Cart')}</span>
               {totalItemCount > 0 && (
                 <span className="rounded-full bg-white text-emerald-800 px-2 py-0.5 text-[11px] font-black animate-pulse">
                   {totalItemCount}
@@ -911,50 +963,50 @@ function ShopContent() {
       </header>
 
       {/* Hero Banner */}
-      <section className="bg-gradient-to-b from-white via-emerald-50/20 to-slate-50 border-b border-slate-200/80 pt-10 pb-12 px-4 sm:px-6">
+      <section className="bg-gradient-to-b from-white via-emerald-50/20 to-slate-50 dark:from-slate-900 dark:via-slate-900/60 dark:to-slate-950 border-b border-slate-200/80 dark:border-slate-800 pt-10 pb-12 px-4 sm:px-6 transition-colors">
         <div className="max-w-6xl mx-auto text-center">
-          <div className="inline-flex items-center space-x-2 rounded-full border border-emerald-200 bg-emerald-50 px-4 py-1.5 text-xs font-bold text-emerald-800 mb-4 shadow-xs">
-            <Sparkles className="h-4 w-4 text-emerald-600" />
-            <span>Fast Local Delivery • Telebirr • CBE Birr • Cash on Delivery</span>
+          <div className="inline-flex items-center space-x-2 rounded-full border border-emerald-200 dark:border-emerald-800 bg-emerald-50 dark:bg-emerald-950/60 px-4 py-1.5 text-xs font-bold text-emerald-800 dark:text-emerald-300 mb-4 shadow-xs">
+            <Sparkles className="h-4 w-4 text-emerald-600 dark:text-emerald-400" />
+            <span>{t('shop_subtitle', 'Fast Local Delivery • Telebirr • CBE Birr • Cash on Delivery')}</span>
           </div>
 
-          <h1 className="text-3xl sm:text-5xl font-black text-slate-900 tracking-tight">
-            Order Fresh Products Online
+          <h1 className="text-3xl sm:text-5xl font-black text-slate-900 dark:text-slate-100 tracking-tight">
+            {t('shop_title', 'Order Fresh Products Online')}
           </h1>
 
-          <p className="mt-3 text-sm sm:text-base text-slate-600 max-w-2xl mx-auto">
+          <p className="mt-3 text-sm sm:text-base text-slate-600 dark:text-slate-400 max-w-2xl mx-auto">
             Browse verified stock from <strong>{storeName}</strong>. Add items to your cart, upload your payment statement, and acknowledge delivery directly online.
           </p>
 
           {/* Quick Value Props */}
           <div className="mt-8 grid grid-cols-1 sm:grid-cols-3 gap-3.5 max-w-3xl mx-auto text-left">
-            <div className="rounded-2xl border border-slate-200/90 bg-white p-3.5 shadow-xs flex items-center space-x-3">
-              <div className="rounded-xl bg-emerald-50 p-2 text-emerald-600">
+            <div className="rounded-2xl border border-slate-200/90 dark:border-slate-800 bg-white dark:bg-slate-900 p-3.5 shadow-xs flex items-center space-x-3">
+              <div className="rounded-xl bg-emerald-50 dark:bg-emerald-950/60 p-2 text-emerald-600 dark:text-emerald-400">
                 <Truck className="h-4 w-4" />
               </div>
               <div>
-                <h4 className="text-xs font-black text-slate-900">Doorstep Delivery</h4>
-                <p className="text-[11px] text-slate-500">Same-day rider dispatch</p>
+                <h4 className="text-xs font-black text-slate-900 dark:text-slate-100">Doorstep Delivery</h4>
+                <p className="text-[11px] text-slate-500 dark:text-slate-400">Same-day rider dispatch</p>
               </div>
             </div>
 
-            <div className="rounded-2xl border border-slate-200/90 bg-white p-3.5 shadow-xs flex items-center space-x-3">
-              <div className="rounded-xl bg-emerald-50 p-2 text-emerald-600">
+            <div className="rounded-2xl border border-slate-200/90 dark:border-slate-800 bg-white dark:bg-slate-900 p-3.5 shadow-xs flex items-center space-x-3">
+              <div className="rounded-xl bg-emerald-50 dark:bg-emerald-950/60 p-2 text-emerald-600 dark:text-emerald-400">
                 <ShieldCheck className="h-4 w-4" />
               </div>
               <div>
-                <h4 className="text-xs font-black text-slate-900">Verified Stock</h4>
-                <p className="text-[11px] text-slate-500">Only verified fresh products</p>
+                <h4 className="text-xs font-black text-slate-900 dark:text-slate-100">Verified Stock</h4>
+                <p className="text-[11px] text-slate-500 dark:text-slate-400">Only verified fresh products</p>
               </div>
             </div>
 
-            <div className="rounded-2xl border border-slate-200/90 bg-white p-3.5 shadow-xs flex items-center space-x-3">
-              <div className="rounded-xl bg-emerald-50 p-2 text-emerald-600">
+            <div className="rounded-2xl border border-slate-200/90 dark:border-slate-800 bg-white dark:bg-slate-900 p-3.5 shadow-xs flex items-center space-x-3">
+              <div className="rounded-xl bg-emerald-50 dark:bg-emerald-950/60 p-2 text-emerald-600 dark:text-emerald-400">
                 <Camera className="h-4 w-4" />
               </div>
               <div>
-                <h4 className="text-xs font-black text-slate-900">Proof of Receipt</h4>
-                <p className="text-[11px] text-slate-500">Acknowledge delivery with photo</p>
+                <h4 className="text-xs font-black text-slate-900 dark:text-slate-100">Proof of Receipt</h4>
+                <p className="text-[11px] text-slate-500 dark:text-slate-400">Acknowledge delivery with photo</p>
               </div>
             </div>
           </div>
@@ -972,10 +1024,10 @@ function ShopContent() {
               className={`rounded-xl px-4 py-2 text-xs font-bold whitespace-nowrap transition cursor-pointer ${
                 selectedCategory === 'all'
                   ? 'bg-emerald-600 text-white shadow-xs'
-                  : 'bg-white border border-slate-200 text-slate-600 hover:bg-slate-50'
+                  : 'bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-700'
               }`}
             >
-              All Categories
+              {t('shop_all_categories', 'All Categories')}
             </button>
             {storeData?.categories.map((cat) => (
               <button
@@ -997,10 +1049,10 @@ function ShopContent() {
             <Search className="absolute left-3.5 top-3 h-4 w-4 text-slate-400" />
             <input
               type="text"
-              placeholder="Search products..."
+              placeholder={t('btn_search', 'Search products...')}
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              className="w-full rounded-xl border border-slate-200 bg-white pl-10 pr-4 py-2 text-xs font-medium focus:border-emerald-500 focus:outline-none shadow-xs"
+              className="w-full rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-900 dark:text-slate-100 placeholder-slate-400 pl-10 pr-4 py-2 text-xs font-medium focus:border-emerald-500 focus:outline-none shadow-xs"
             />
           </div>
         </div>
@@ -1008,13 +1060,13 @@ function ShopContent() {
         {/* Product Cards Grid */}
         {loading ? (
           <div className="flex h-64 items-center justify-center">
-            <Loader2 className="h-8 w-8 animate-spin text-emerald-600" />
+            <Loader2 className="h-8 w-8 animate-spin text-emerald-600 dark:text-emerald-400" />
           </div>
         ) : filteredProducts.length === 0 ? (
-          <div className="rounded-3xl border border-slate-200 bg-white p-12 text-center shadow-xs">
-            <Package className="h-12 w-12 text-slate-300 mx-auto mb-3" />
-            <h3 className="text-base font-bold text-slate-800">No products available in this category</h3>
-            <p className="text-xs text-slate-500 mt-1">Try switching to &quot;All Categories&quot; or clearing your search.</p>
+          <div className="rounded-3xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 p-12 text-center shadow-xs">
+            <Package className="h-12 w-12 text-slate-300 dark:text-slate-600 mx-auto mb-3" />
+            <h3 className="text-base font-bold text-slate-800 dark:text-slate-200">No products available in this category</h3>
+            <p className="text-xs text-slate-500 dark:text-slate-400 mt-1">Try switching to &quot;All Categories&quot; or clearing your search.</p>
           </div>
         ) : (
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-5">
@@ -1025,59 +1077,63 @@ function ShopContent() {
               return (
                 <div
                   key={p.id}
-                  className="rounded-3xl border border-slate-200/90 bg-white p-5 shadow-xs hover:shadow-md transition flex flex-col justify-between"
+                  className="rounded-3xl border border-slate-200/90 dark:border-slate-800 bg-white dark:bg-slate-900 p-5 shadow-xs hover:shadow-md transition flex flex-col justify-between"
                 >
                   <div>
                     <div className="flex items-center justify-between mb-2">
-                      <span className="rounded-lg bg-emerald-50 text-emerald-800 px-2 py-0.5 text-[10px] font-bold uppercase tracking-wider">
+                      <span className="rounded-lg bg-emerald-50 dark:bg-emerald-950/60 text-emerald-800 dark:text-emerald-300 px-2 py-0.5 text-[10px] font-bold uppercase tracking-wider">
                         {p.category_name}
                       </span>
                       <span
                         className={`text-[11px] font-bold ${
                           isOutOfStock
-                            ? 'text-red-600'
+                            ? 'text-red-600 dark:text-red-400'
                             : p.stock_status === 'LOW STOCK'
-                            ? 'text-amber-600'
-                            : 'text-emerald-700'
+                            ? 'text-amber-600 dark:text-amber-400'
+                            : 'text-emerald-700 dark:text-emerald-400'
                         }`}
                       >
-                        {isOutOfStock ? 'Out of stock' : `${p.stock_quantity} available`}
+                        {isOutOfStock
+                          ? t('status_empty', 'Out of stock')
+                          : p.stock_status === 'LOW STOCK'
+                          ? t('status_low_stock', 'Low Stock')
+                          : `${p.stock_quantity} ${t('status_in_stock', 'In Stock')}`}
                       </span>
                     </div>
 
-                    <h3 className="text-base font-black text-slate-900 leading-snug">{p.name}</h3>
+                    <h3 className="text-base font-black text-slate-900 dark:text-slate-100 leading-snug">{p.name}</h3>
 
                     {p.description && (
-                      <p className="text-xs text-slate-500 mt-1 line-clamp-2">{p.description}</p>
+                      <p className="text-xs text-slate-500 dark:text-slate-400 mt-1 line-clamp-2">{p.description}</p>
                     )}
                   </div>
 
-                  <div className="mt-5 pt-4 border-t border-slate-100 flex items-center justify-between">
+                  <div className="mt-5 pt-4 border-t border-slate-100 dark:border-slate-800 flex items-center justify-between">
                     <div>
-                      <span className="text-[10px] uppercase font-bold text-slate-400 block">Price</span>
-                      <span className="text-lg font-black text-slate-900">
+                      <span className="text-[10px] uppercase font-bold text-slate-400 block">{t('label_price', 'Price')}</span>
+                      <span className="text-lg font-black text-slate-900 dark:text-slate-100">
                         {currencySymbol} {p.price.toFixed(2)}
                       </span>
                     </div>
 
                     {isOutOfStock ? (
-                      <span className="rounded-xl bg-slate-100 px-3 py-2 text-xs font-bold text-slate-400">
-                        Unavailable
+                      <span className="rounded-xl bg-slate-100 dark:bg-slate-800 px-3 py-2 text-xs font-bold text-slate-400">
+                        {t('status_empty', 'Unavailable')}
                       </span>
                     ) : inCartItem ? (
-                      <div className="flex items-center space-x-2 bg-emerald-50 border border-emerald-200 rounded-xl p-1">
+                      <div className="flex items-center space-x-2 bg-emerald-50 dark:bg-emerald-950/60 border border-emerald-200 dark:border-emerald-800 rounded-xl p-1">
                         <button
                           onClick={() => updateQuantity(p.id, -1)}
-                          className="rounded-lg bg-white p-1 text-slate-700 hover:bg-slate-100 shadow-xs cursor-pointer"
+                          className="rounded-lg bg-white dark:bg-slate-800 p-1 text-slate-700 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-700 shadow-xs cursor-pointer"
                         >
                           <Minus className="h-3 w-3" />
                         </button>
-                        <span className="text-xs font-black text-emerald-900 px-1">
+                        <span className="text-xs font-black text-emerald-900 dark:text-emerald-300 px-1">
                           {inCartItem.quantity}
                         </span>
                         <button
                           onClick={() => updateQuantity(p.id, 1)}
-                          className="rounded-lg bg-white p-1 text-slate-700 hover:bg-slate-100 shadow-xs cursor-pointer"
+                          className="rounded-lg bg-white dark:bg-slate-800 p-1 text-slate-700 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-700 shadow-xs cursor-pointer"
                         >
                           <Plus className="h-3 w-3" />
                         </button>
@@ -1088,7 +1144,7 @@ function ShopContent() {
                         className="inline-flex items-center rounded-xl bg-emerald-600 px-3.5 py-2 text-xs font-bold text-white shadow-xs hover:bg-emerald-500 transition cursor-pointer"
                       >
                         <Plus className="mr-1 h-3.5 w-3.5" />
-                        Add to Cart
+                        {t('btn_add_to_cart', 'Add to Cart')}
                       </button>
                     )}
                   </div>
@@ -1108,16 +1164,16 @@ function ShopContent() {
           />
 
           <div className="fixed inset-y-0 right-0 flex max-w-full pl-10">
-            <div className="w-screen max-w-md bg-white shadow-2xl flex flex-col">
+            <div className="w-screen max-w-md bg-white dark:bg-slate-900 shadow-2xl flex flex-col border-l border-slate-200 dark:border-slate-800 transition-colors">
               {/* Drawer Header */}
-              <div className="p-5 border-b border-slate-100 flex items-center justify-between bg-slate-50">
+              <div className="p-5 border-b border-slate-100 dark:border-slate-800 flex items-center justify-between bg-slate-50 dark:bg-slate-900/90">
                 <div className="flex items-center space-x-2">
-                  <ShoppingCart className="h-5 w-5 text-emerald-600" />
-                  <h3 className="text-base font-black text-slate-900">Your Shopping Cart</h3>
+                  <ShoppingCart className="h-5 w-5 text-emerald-600 dark:text-emerald-400" />
+                  <h3 className="text-base font-black text-slate-900 dark:text-slate-100">{t('nav_cart', 'Your Shopping Cart')}</h3>
                 </div>
                 <button
                   onClick={() => setIsCartOpen(false)}
-                  className="rounded-lg p-1.5 text-slate-400 hover:bg-slate-200 transition"
+                  className="rounded-lg p-1.5 text-slate-400 hover:bg-slate-200 dark:hover:bg-slate-800 transition"
                 >
                   <X className="h-5 w-5" />
                 </button>
@@ -1126,15 +1182,15 @@ function ShopContent() {
               {/* Drawer Content */}
               <div className="flex-1 overflow-y-auto p-5 space-y-4">
                 {orderError && (
-                  <div className="rounded-xl bg-red-50 border border-red-200 p-3 text-xs text-red-700">
+                  <div className="rounded-xl bg-red-50 dark:bg-red-950/50 border border-red-200 dark:border-red-800 p-3 text-xs text-red-700 dark:text-red-300">
                     {orderError}
                   </div>
                 )}
 
                 {cart.length === 0 ? (
-                  <div className="py-16 text-center text-xs text-slate-400">
-                    <ShoppingCart className="h-10 w-10 text-slate-300 mx-auto mb-2" />
-                    Your cart is empty. Add products from the store.
+                  <div className="py-16 text-center text-xs text-slate-400 dark:text-slate-500">
+                    <ShoppingCart className="h-10 w-10 text-slate-300 dark:text-slate-700 mx-auto mb-2" />
+                    {t('shop_cart_empty', 'Your cart is empty. Add products from the store.')}
                   </div>
                 ) : (
                   <>
@@ -1143,11 +1199,11 @@ function ShopContent() {
                       {cart.map((item) => (
                         <div
                           key={item.product.id}
-                          className="flex items-center justify-between p-3 rounded-2xl bg-slate-50 border border-slate-200 text-xs"
+                          className="flex items-center justify-between p-3 rounded-2xl bg-slate-50 dark:bg-slate-800/80 border border-slate-200 dark:border-slate-700 text-xs"
                         >
                           <div className="truncate pr-2">
-                            <h4 className="font-bold text-slate-900 truncate">{item.product.name}</h4>
-                            <span className="text-[11px] text-slate-500">
+                            <h4 className="font-bold text-slate-900 dark:text-slate-100 truncate">{item.product.name}</h4>
+                            <span className="text-[11px] text-slate-500 dark:text-slate-400">
                               {currencySymbol} {item.product.price.toFixed(2)} each
                             </span>
                           </div>
@@ -1155,16 +1211,16 @@ function ShopContent() {
                           <div className="flex items-center space-x-1.5 flex-shrink-0">
                             <button
                               onClick={() => updateQuantity(item.product.id, -1)}
-                              className="rounded-lg bg-white border border-slate-200 p-1 text-slate-700 hover:bg-slate-100"
+                              className="rounded-lg bg-white dark:bg-slate-700 border border-slate-200 dark:border-slate-600 p-1 text-slate-700 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-600"
                             >
                               <Minus className="h-3 w-3" />
                             </button>
-                            <span className="font-black text-slate-800 w-5 text-center">
+                            <span className="font-black text-slate-800 dark:text-slate-100 w-5 text-center">
                               {item.quantity}
                             </span>
                             <button
                               onClick={() => updateQuantity(item.product.id, 1)}
-                              className="rounded-lg bg-white border border-slate-200 p-1 text-slate-700 hover:bg-slate-100"
+                              className="rounded-lg bg-white dark:bg-slate-700 border border-slate-200 dark:border-slate-600 p-1 text-slate-700 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-600"
                             >
                               <Plus className="h-3 w-3" />
                             </button>
@@ -1179,9 +1235,9 @@ function ShopContent() {
                       ))}
 
                       {/* Subtotal */}
-                      <div className="pt-3 border-t border-slate-100 flex items-center justify-between">
-                        <span className="text-xs font-bold uppercase text-slate-500">Order Subtotal:</span>
-                        <span className="text-lg font-black text-slate-900">
+                      <div className="pt-3 border-t border-slate-100 dark:border-slate-800 flex items-center justify-between">
+                        <span className="text-xs font-bold uppercase text-slate-500 dark:text-slate-400">{t('label_subtotal', 'Order Subtotal:')}</span>
+                        <span className="text-lg font-black text-slate-900 dark:text-slate-100">
                           {currencySymbol} {cartTotal.toFixed(2)}
                         </span>
                       </div>
@@ -1189,15 +1245,15 @@ function ShopContent() {
 
                     {/* Customer Account Prompt in Checkout */}
                     {!customerUser && (
-                      <div className="rounded-xl border border-emerald-200 bg-emerald-50/60 p-3 flex items-center justify-between text-xs">
-                        <span className="text-emerald-900">Have a customer account?</span>
+                      <div className="rounded-xl border border-emerald-200 dark:border-emerald-800 bg-emerald-50/60 dark:bg-emerald-950/40 p-3 flex items-center justify-between text-xs">
+                        <span className="text-emerald-900 dark:text-emerald-300">Have a customer account?</span>
                         <button
                           type="button"
                           onClick={() => {
                             setAuthTab('login');
                             setAuthModalOpen(true);
                           }}
-                          className="font-bold text-emerald-700 hover:underline"
+                          className="font-bold text-emerald-700 dark:text-emerald-400 hover:underline"
                         >
                           Sign In for Quick Checkout
                         </button>
@@ -1205,56 +1261,56 @@ function ShopContent() {
                     )}
 
                     {/* Customer Checkout Form */}
-                    <form id="orderForm" onSubmit={handlePlaceOrder} className="space-y-3.5 pt-4 border-t border-slate-100">
-                      <span className="text-xs font-black uppercase text-slate-500 block">Delivery & Contact Details:</span>
+                    <form id="orderForm" onSubmit={handlePlaceOrder} className="space-y-3.5 pt-4 border-t border-slate-100 dark:border-slate-800">
+                      <span className="text-xs font-black uppercase text-slate-500 dark:text-slate-400 block">Delivery & Contact Details:</span>
 
                       <div>
-                        <label className="block text-[11px] font-bold uppercase text-slate-600">Your Full Name *</label>
+                        <label className="block text-[11px] font-bold uppercase text-slate-600 dark:text-slate-300">{t('label_name', 'Your Full Name')} *</label>
                         <input
                           type="text"
                           required
                           placeholder="e.g. Abebe Kebede"
                           value={checkoutForm.customer_name}
                           onChange={(e) => setCheckoutForm({ ...checkoutForm, customer_name: e.target.value })}
-                          className="mt-1 w-full rounded-xl border border-slate-200 px-3 py-2 text-xs font-semibold focus:border-emerald-500 focus:outline-none"
+                          className="mt-1 w-full rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-900 dark:text-slate-100 px-3 py-2 text-xs font-semibold focus:border-emerald-500 focus:outline-none"
                         />
                       </div>
 
                       <div>
-                        <label className="block text-[11px] font-bold uppercase text-slate-600">Phone Number *</label>
+                        <label className="block text-[11px] font-bold uppercase text-slate-600 dark:text-slate-300">{t('label_phone', 'Phone Number')} *</label>
                         <input
                           type="text"
                           required
                           placeholder="0911 22 33 44"
                           value={checkoutForm.customer_phone}
                           onChange={(e) => setCheckoutForm({ ...checkoutForm, customer_phone: e.target.value })}
-                          className="mt-1 w-full rounded-xl border border-slate-200 px-3 py-2 text-xs font-semibold focus:border-emerald-500 focus:outline-none"
+                          className="mt-1 w-full rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-900 dark:text-slate-100 px-3 py-2 text-xs font-semibold focus:border-emerald-500 focus:outline-none"
                         />
                       </div>
 
                       <div>
-                        <label className="block text-[11px] font-bold uppercase text-slate-600">Delivery Address / Area *</label>
+                        <label className="block text-[11px] font-bold uppercase text-slate-600 dark:text-slate-300">{t('label_address', 'Delivery Address / Area')} *</label>
                         <input
                           type="text"
                           required
                           placeholder="e.g. Bole Medhanialem, Edna Mall Area"
                           value={checkoutForm.delivery_address}
                           onChange={(e) => setCheckoutForm({ ...checkoutForm, delivery_address: e.target.value })}
-                          className="mt-1 w-full rounded-xl border border-slate-200 px-3 py-2 text-xs font-semibold focus:border-emerald-500 focus:outline-none"
+                          className="mt-1 w-full rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-900 dark:text-slate-100 px-3 py-2 text-xs font-semibold focus:border-emerald-500 focus:outline-none"
                         />
                       </div>
 
                       <div>
-                        <label className="block text-[11px] font-bold uppercase text-slate-600">Payment Method *</label>
+                        <label className="block text-[11px] font-bold uppercase text-slate-600 dark:text-slate-300">{t('payment_method', 'Payment Method')} *</label>
                         <select
                           value={checkoutForm.payment_method}
                           onChange={(e) => setCheckoutForm({ ...checkoutForm, payment_method: e.target.value })}
-                          className="mt-1 w-full rounded-xl border border-slate-200 px-3 py-2 text-xs font-bold text-slate-800 focus:border-emerald-500 focus:outline-none cursor-pointer"
+                          className="mt-1 w-full rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 px-3 py-2 text-xs font-bold text-slate-800 dark:text-slate-100 focus:border-emerald-500 focus:outline-none cursor-pointer"
                         >
-                          <option value="Telebirr">Telebirr (Mobile Transfer / QR)</option>
-                          <option value="CBE Birr">CBE Birr (Mobile Transfer)</option>
-                          <option value="Bank Transfer">Commercial Bank / Awash / Dashen Bank Transfer</option>
-                          <option value="Cash on Delivery">Cash on Delivery</option>
+                          <option value="Telebirr">{t('payment_telebirr', 'Telebirr (Mobile Transfer / QR)')}</option>
+                          <option value="CBE Birr">{t('payment_cbe_birr', 'CBE Birr (Mobile Transfer)')}</option>
+                          <option value="Bank Transfer">{t('payment_bank_transfer', 'Commercial Bank / Awash / Dashen Bank Transfer')}</option>
+                          <option value="Cash on Delivery">{t('payment_cash_on_delivery', 'Cash on Delivery')}</option>
                         </select>
                       </div>
 
@@ -1690,13 +1746,13 @@ function ShopContent() {
                       </div>
 
                       <div>
-                        <label className="block text-[11px] font-bold uppercase text-slate-600">Delivery Instructions / Notes (Optional)</label>
+                        <label className="block text-[11px] font-bold uppercase text-slate-600 dark:text-slate-300">{t('label_notes', 'Delivery Instructions / Notes')}</label>
                         <input
                           type="text"
                           placeholder="e.g. House #102, ring the bell on gate"
                           value={checkoutForm.notes}
                           onChange={(e) => setCheckoutForm({ ...checkoutForm, notes: e.target.value })}
-                          className="mt-1 w-full rounded-xl border border-slate-200 px-3 py-2 text-xs focus:border-emerald-500 focus:outline-none"
+                          className="mt-1 w-full rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-900 dark:text-slate-100 px-3 py-2 text-xs focus:border-emerald-500 focus:outline-none"
                         />
                       </div>
                     </form>
@@ -1706,7 +1762,7 @@ function ShopContent() {
 
               {/* Drawer Footer Submit */}
               {cart.length > 0 && (
-                <div className="p-5 border-t border-slate-100 bg-slate-50">
+                <div className="p-5 border-t border-slate-100 dark:border-slate-800 bg-slate-50 dark:bg-slate-900/90">
                   <button
                     type="submit"
                     form="orderForm"
@@ -1716,12 +1772,12 @@ function ShopContent() {
                     {orderSubmitting ? (
                       <>
                         <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                        Submitting Order & Receipt...
+                        {t('btn_saving', 'Submitting Order & Receipt...')}
                       </>
                     ) : (
                       <>
                         <CheckCircle2 className="mr-2 h-4 w-4" />
-                        Confirm & Place Order ({currencySymbol} {cartTotal.toFixed(2)})
+                        {t('btn_place_order', 'Confirm & Place Order')} ({currencySymbol} {cartTotal.toFixed(2)})
                       </>
                     )}
                   </button>
